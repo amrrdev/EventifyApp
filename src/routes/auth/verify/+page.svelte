@@ -122,151 +122,239 @@
 	<meta name="description" content="Verify your email address to complete registration" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center p-4">
-	<!-- Background decoration -->
-	<div class="absolute inset-0 overflow-hidden pointer-events-none">
-		<div class="absolute -top-40 -right-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-		<div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-		<div class="absolute top-40 left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-	</div>
-
-	<div class="relative w-full max-w-md">
-		<!-- Main card -->
-		<div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
+<div class="min-h-screen bg-[#1a1d23] flex">
+	<!-- Left side - Form -->
+	<div class="w-1/2 flex items-center justify-center p-12">
+		<div class="w-full max-w-md">
 			<!-- Header -->
-			<div class="text-center mb-8">
-				<div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-2xl mb-4">
-					<span class="text-2xl">📧</span>
+			<div class="mb-8">
+				<div class="flex items-center mb-6">
+					<div class="w-8 h-8 bg-[#2d3748] border border-[#4a5568] flex items-center justify-center font-mono text-sm text-[#a0aec0]">
+						⚡
+					</div>
+					<div class="ml-3 font-mono text-[#a0aec0] text-sm">
+						<span class="text-[#ed8936]">event</span>:<span class="text-[#68d391]">email.verification</span>
+					</div>
 				</div>
-				<h1 class="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
-				<p class="text-gray-600">
-					We've sent a 6-digit code to
-					<span class="font-semibold text-gray-800">{email}</span>
+				<h1 class="text-3xl font-mono font-bold text-[#e2e8f0] mb-2">
+					<span class="text-[#ed8936]">await</span> verification<span class="text-[#ed8936]">.confirm()</span>
+				</h1>
+				<p class="text-[#a0aec0] font-mono text-sm">
+					Email verification event triggered for
+				</p>
+				<p class="text-[#68d391] font-mono text-sm font-bold">
+					{email || 'your-email@domain.com'}
 				</p>
 			</div>
 
 			<!-- Success message -->
 			{#if successMessage}
-				<div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-					<p class="text-green-600 text-sm flex items-center">
-						<span class="mr-2">✅</span>
+				<div class="bg-[#1b2d1b] border border-[#4a7c59] rounded-md p-3 mb-4">
+					<p class="text-[#68d391] text-sm font-mono flex items-center">
+						<span class="mr-2">[SUCCESS]</span>
 						{successMessage}
 					</p>
 				</div>
 			{/if}
 
 			<!-- Form -->
-			<form onsubmit={handleSubmit} class="space-y-6">
+			<form onsubmit={handleSubmit} class="space-y-5">
 				{#if errors.general}
-					<div class="bg-red-50 border border-red-200 rounded-xl p-4">
-						<p class="text-red-600 text-sm flex items-center">
-							<span class="mr-2">❌</span>
+					<div class="bg-[#2d1b1b] border border-[#744444] rounded-md p-3 mb-4">
+						<p class="text-[#f56565] text-sm font-mono flex items-center">
+							<span class="mr-2">[ERROR]</span>
 							{errors.general}
 						</p>
 					</div>
 				{/if}
 
-				<!-- Email input (editable) -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Email Address
-					</label>
-					<input
-						type="email"
-						bind:value={email}
-						placeholder="Enter your email"
-						class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white"
-					/>
-					{#if errors.email}
-						<p class="mt-2 text-sm text-red-600 flex items-center">
-							<span class="mr-1">⚠️</span>
-							{errors.email}
-						</p>
-					{/if}
+				<div class="space-y-4">
+					<!-- Email input (editable) -->
+					<div>
+						<label class="block text-sm font-mono text-[#a0aec0] mb-2">
+							<span class="text-[#ed8936]">event.target</span> <span class="text-[#f56565]">*</span>
+						</label>
+						<input
+							type="email"
+							bind:value={email}
+							placeholder="developer@example.com"
+							class="w-full px-4 py-3 bg-[#2d3748] border border-[#4a5568] rounded-md text-[#e2e8f0] font-mono text-sm focus:border-[#ed8936] focus:outline-none transition-colors placeholder-[#718096]"
+						/>
+						{#if errors.email}
+							<p class="mt-1 text-[#f56565] text-xs font-mono">[ERROR] {errors.email}</p>
+						{/if}
+					</div>
+
+					<!-- OTP input -->
+					<div>
+						<label class="block text-sm font-mono text-[#a0aec0] mb-2">
+							<span class="text-[#ed8936]">event.payload.code</span> <span class="text-[#f56565]">*</span>
+						</label>
+						<input
+							type="text"
+							bind:value={otp}
+							oninput={handleOtpInput}
+							placeholder="000000"
+							maxlength="6"
+							class="w-full px-4 py-3 bg-[#2d3748] border border-[#4a5568] rounded-md text-[#e2e8f0] font-mono text-sm focus:border-[#ed8936] focus:outline-none transition-colors placeholder-[#718096] text-center text-2xl tracking-widest"
+						/>
+						{#if errors.otp}
+							<p class="mt-1 text-[#f56565] text-xs font-mono">[ERROR] {errors.otp}</p>
+						{/if}
+					</div>
 				</div>
 
-				<!-- OTP input -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Verification Code
-					</label>
-					<input
-						type="text"
-						bind:value={otp}
-						oninput={handleOtpInput}
-						placeholder="000000"
-						maxlength="6"
-						class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white text-center text-2xl font-mono tracking-widest"
-					/>
-					{#if errors.otp}
-						<p class="mt-2 text-sm text-red-600 flex items-center">
-							<span class="mr-1">⚠️</span>
-							{errors.otp}
-						</p>
-					{/if}
-				</div>
-
-				<Button
+				<button
 					type="submit"
-					variant="primary"
-					size="lg"
-					fullWidth
-					loading={isLoading}
+					disabled={isLoading}
+					class="w-full mt-6 px-4 py-3 bg-[#2d3748] border border-[#ed8936] text-[#ed8936] font-mono text-sm rounded-md hover:bg-[#ed8936] hover:text-[#1a202c] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Verify Email
-				</Button>
+					{isLoading ? '[PROCESSING EVENT...]' : 'verification.confirm()'}
+				</button>
 			</form>
 
 			<!-- Resend section -->
-			<div class="mt-8 text-center">
-				<p class="text-gray-600 mb-4">Didn't receive the code?</p>
-				
+			<div class="mt-8 pt-6 border-t border-[#4a5568]">
+				<p class="text-[#a0aec0] font-mono text-sm mb-4">Event not received?</p>
+
 				{#if resendCooldown > 0}
-					<p class="text-sm text-gray-500">
-						Resend available in {resendCooldown} seconds
+					<p class="text-sm font-mono text-[#a0aec0]">
+						<span class="text-[#ed8936]">retry_after:</span> {resendCooldown}s
 					</p>
 				{:else}
-					<Button
-						variant="ghost"
-						size="sm"
-						loading={isResending}
+					<button
+						type="button"
+						disabled={isResending}
 						onclick={handleResendOtp}
+						class="px-4 py-2 bg-[#2d3748] border border-[#63b3ed] text-[#63b3ed] font-mono text-sm rounded-md hover:bg-[#63b3ed] hover:text-[#1a202c] transition-all duration-200 disabled:opacity-50"
 					>
-						Resend Code
-					</Button>
+						{isResending ? '[RETRYING...]' : 'event.resend()'}
+					</button>
 				{/if}
 			</div>
 
 			<!-- Footer -->
-			<div class="mt-8 text-center">
-				<p class="text-gray-600">
-					Wrong email?
-					<a href="/auth/sign-up" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
-						Go back
-					</a>
+			<div class="mt-8 pt-6 border-t border-[#4a5568]">
+				<p class="text-[#a0aec0] font-mono text-sm">
+					<span class="text-[#ed8936]">if</span> (email.invalid)
+					<a href="/auth/sign-up" class="text-[#68d391] hover:text-[#9ae6b4] ml-2">register.retry()</a>
 				</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Right side - Event System Dashboard -->
+	<div class="w-1/2 bg-[#2d3748] flex items-center justify-center p-12">
+		<div class="max-w-lg">
+			<!-- Event Monitor Window -->
+			<div class="bg-[#1a202c] rounded-lg border border-[#4a5568] shadow-2xl">
+				<!-- Window Header -->
+				<div class="flex items-center justify-between px-4 py-3 bg-[#2d3748] rounded-t-lg border-b border-[#4a5568]">
+					<div class="flex items-center space-x-2">
+						<div class="w-3 h-3 bg-[#f56565] rounded-full"></div>
+						<div class="w-3 h-3 bg-[#ed8936] rounded-full"></div>
+						<div class="w-3 h-3 bg-[#68d391] rounded-full"></div>
+					</div>
+					<div class="text-[#a0aec0] font-mono text-xs">event-monitor.log</div>
+				</div>
+
+				<!-- Event Log Content -->
+				<div class="p-6 font-mono text-sm space-y-3">
+					<div class="text-[#ed8936]">📧 Email Verification Events</div>
+
+					<div class="space-y-2 text-xs">
+						<div class="flex items-center space-x-2">
+							<span class="text-[#68d391]">●</span>
+							<span class="text-[#a0aec0]">2024-01-15 23:42:15</span>
+							<span class="text-[#63b3ed]">EMAIL_SENT</span>
+							<span class="text-[#a0aec0]">→ {email || 'user@example.com'}</span>
+						</div>
+						<div class="flex items-center space-x-2">
+							<span class="text-[#ed8936]">●</span>
+							<span class="text-[#a0aec0]">2024-01-15 23:42:16</span>
+							<span class="text-[#63b3ed]">OTP_GENERATED</span>
+							<span class="text-[#a0aec0]">code: ******</span>
+						</div>
+						<div class="flex items-center space-x-2">
+							<span class="text-[#68d391]">●</span>
+							<span class="text-[#a0aec0]">2024-01-15 23:42:17</span>
+							<span class="text-[#63b3ed]">DELIVERY_CONFIRMED</span>
+							<span class="text-[#a0aec0]">status: delivered</span>
+						</div>
+						<div class="flex items-center space-x-2">
+							<span class="text-[#ed8936]">⏳</span>
+							<span class="text-[#a0aec0]">2024-01-15 23:42:18</span>
+							<span class="text-[#63b3ed]">AWAITING_INPUT</span>
+							<span class="text-[#a0aec0]">timeout: 10min</span>
+						</div>
+					</div>
+
+					<div class="pt-4 border-t border-[#4a5568]">
+						<div class="text-[#ed8936] text-sm font-bold mb-2">🔥 Live Event Stats</div>
+						<div class="grid grid-cols-2 gap-4 text-xs">
+							<div class="bg-[#2d3748] p-3 rounded border border-[#4a5568]">
+								<div class="text-[#63b3ed]">Emails Sent Today</div>
+								<div class="text-[#68d391] text-lg font-bold">12,847</div>
+							</div>
+							<div class="bg-[#2d3748] p-3 rounded border border-[#4a5568]">
+								<div class="text-[#63b3ed]">Success Rate</div>
+								<div class="text-[#68d391] text-lg font-bold">99.2%</div>
+							</div>
+							<div class="bg-[#2d3748] p-3 rounded border border-[#4a5568]">
+								<div class="text-[#63b3ed]">Avg Verify Time</div>
+								<div class="text-[#68d391] text-lg font-bold">47s</div>
+							</div>
+							<div class="bg-[#2d3748] p-3 rounded border border-[#4a5568]">
+								<div class="text-[#63b3ed]">Queue Status</div>
+								<div class="text-[#68d391] text-lg font-bold">CLEAR</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="pt-4 border-t border-[#4a5568]">
+						<div class="text-[#ed8936]">⚡ Event Webhooks</div>
+						<div class="text-[#a0aec0] text-xs mt-1 space-y-1">
+							<div>• email.verification.sent</div>
+							<div>• email.verification.confirmed</div>
+							<div>• user.account.activated</div>
+						</div>
+					</div>
+
+					<div class="pt-2">
+						<div class="text-[#a0aec0]">
+							<span class="text-[#ed8936]">event</span>:<span class="text-[#68d391]">monitor</span> <span class="animate-pulse">▋</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Additional Info -->
+			<div class="mt-8 text-center">
+				<div class="text-[#a0aec0] font-mono text-xs space-y-1">
+					<div>Event Processing: <span class="text-[#68d391]">Real-time</span></div>
+					<div>Webhook Delivery: <span class="text-[#68d391]">&lt;200ms</span></div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-	@keyframes blob {
-		0% { transform: translate(0px, 0px) scale(1); }
-		33% { transform: translate(30px, -50px) scale(1.1); }
-		66% { transform: translate(-20px, 20px) scale(0.9); }
-		100% { transform: translate(0px, 0px) scale(1); }
+	/* Custom scrollbar */
+	::-webkit-scrollbar {
+		width: 8px;
 	}
-	
-	.animate-blob {
-		animation: blob 7s infinite;
+
+	::-webkit-scrollbar-track {
+		background: #2d3748;
 	}
-	
-	.animation-delay-2000 {
-		animation-delay: 2s;
+
+	::-webkit-scrollbar-thumb {
+		background: #ed8936;
+		border-radius: 4px;
 	}
-	
-	.animation-delay-4000 {
-		animation-delay: 4s;
+
+	::-webkit-scrollbar-thumb:hover {
+		background: #dd7324;
 	}
 </style>
