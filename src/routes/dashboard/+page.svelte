@@ -367,7 +367,7 @@
 			</div>
 
 			<!-- Event Categories Chart -->
-			{#if metrics && metrics.eventDistribution && metrics.eventDistribution.length > 0}
+			{#if metrics}
 				<div class="mb-6">
 					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
 						<div class="flex items-center justify-between mb-4">
@@ -375,13 +375,17 @@
 								<span class="text-[#ed8936]">event</span>_distribution
 							</h3>
 							<span class="text-[#a0aec0] font-mono text-sm">
-								{metrics.eventDistribution.reduce((sum, item) => sum + item.value, 0)} total
+								{(metrics.eventDistribution && metrics.eventDistribution.length > 0)
+									? metrics.eventDistribution.reduce((sum, item) => sum + item.value, 0)
+									: 0} total
 							</span>
 						</div>
 
 						<!-- Clean Progress Bar Chart -->
 						<div class="space-y-4">
-							{#each metrics.eventDistribution.slice(0, 6) as category}
+							{#each (metrics.eventDistribution && metrics.eventDistribution.length > 0)
+								? metrics.eventDistribution.slice(0, 6)
+								: [{ name: 'No events yet', value: 0, percentage: 0 }] as category}
 								<div class="flex items-center space-x-4">
 									<!-- Category Icon and Name -->
 									<div class="flex items-center space-x-3 w-40">
@@ -543,7 +547,7 @@
 						</div>
 
 						<!-- Event Categories Pie Chart -->
-						{#if metrics.eventDistribution && metrics.eventDistribution.length > 0}
+						{#if metrics}
 							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
 								<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
 									<span class="text-[#ed8936]">event</span>_pie
@@ -552,14 +556,19 @@
 								<!-- Simple Pie Chart -->
 								<div class="relative w-32 h-32 mx-auto mb-4">
 									<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-										{#each metrics.eventDistribution.slice(0, 5) as category, i}
+										{#each (metrics.eventDistribution && metrics.eventDistribution.length > 0)
+											? metrics.eventDistribution.slice(0, 5)
+											: [{ name: 'No events', value: 1, percentage: 100 }] as category, i}
 											{@const colors = ['#63b3ed', '#68d391', '#ed8936', '#f56565', '#9f7aea']}
 											{@const color = colors[i % colors.length]}
-											{@const total = metrics.eventDistribution.slice(0, 5).reduce((sum, item) => sum + item.value, 0)}
+											{@const pieData = (metrics.eventDistribution && metrics.eventDistribution.length > 0)
+												? metrics.eventDistribution.slice(0, 5)
+												: [{ name: 'No events', value: 1, percentage: 100 }]}
+											{@const total = pieData.reduce((sum, item) => sum + item.value, 0)}
 											{@const percentage = (category.value / total) * 100}
 											{@const circumference = 2 * Math.PI * 15.9155}
 											{@const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`}
-											{@const previousPercentages = metrics.eventDistribution.slice(0, i).reduce((sum, item) => sum + ((item.value / total) * 100), 0)}
+											{@const previousPercentages = pieData.slice(0, i).reduce((sum, item) => sum + ((item.value / total) * 100), 0)}
 											{@const strokeDashoffset = -previousPercentages * circumference / 100}
 
 											<circle
@@ -580,7 +589,9 @@
 
 								<!-- Compact Legend -->
 								<div class="space-y-1">
-									{#each metrics.eventDistribution.slice(0, 5) as category, i}
+									{#each (metrics.eventDistribution && metrics.eventDistribution.length > 0)
+										? metrics.eventDistribution.slice(0, 5)
+										: [{ name: 'No events', value: 1, percentage: 100 }] as category, i}
 										{@const colors = ['#63b3ed', '#68d391', '#ed8936', '#f56565', '#9f7aea']}
 										{@const color = colors[i % colors.length]}
 										<div class="flex items-center justify-between text-xs">
