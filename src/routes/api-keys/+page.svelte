@@ -63,14 +63,15 @@
 		try {
 			const newKey = await apiKeyService.createApiKey({ name: newKeyName.trim() });
 
-			// Close modal and clear form
+			// Close modal and clear form immediately
 			showCreateModal = false;
 			newKeyName = '';
 
-			// Refresh the entire list to get all keys including the new one
+			// Refresh the list to get the REAL data from the server
+			// This ensures we show accurate, complete data
 			await loadApiKeys();
 
-			// Show success message if we have a key
+			// Show success message if we have a real key
 			if (newKey && newKey.key) {
 				showCopySuccess = newKey.key;
 				setTimeout(() => showCopySuccess = null, 10000);
@@ -84,12 +85,24 @@
 	}
 
 	async function toggleApiKey(key: string, currentStatus: boolean) {
-		try {
-			await apiKeyService.updateApiKeyActivation(key, { isActive: !currentStatus });
+		// Optimistically update the UI immediately for better UX
+		const newStatus = !currentStatus;
+		apiKeys = apiKeys.map(k =>
+			k.key === key ? { ...k, active: newStatus } : k
+		);
 
-			// Refresh the entire list to get accurate data from server
+		try {
+			// Make the API call
+			await apiKeyService.updateApiKeyActivation(key, { isActive: newStatus });
+
+			// Refresh to get the real, complete data from server
+			// This ensures we always show accurate data
 			await loadApiKeys();
 		} catch (err) {
+			// Revert the optimistic update on error
+			apiKeys = apiKeys.map(k =>
+				k.key === key ? { ...k, active: currentStatus } : k
+			);
 			console.error('Toggle error:', err);
 			error = err instanceof Error ? err.message : 'Failed to update API key';
 		}
@@ -106,16 +119,26 @@
 			return;
 		}
 
+		const keyToDelete = deleteKeyToConfirm;
+
+		// Close modal immediately for better UX
+		showDeleteModal = false;
+		deleteKeyToConfirm = null;
+		deleteConfirmText = '';
+
+		// Store original list in case we need to revert
+		const originalApiKeys = [...apiKeys];
+
+		// Optimistically remove from UI immediately
+		apiKeys = apiKeys.filter(k => k.key !== keyToDelete);
+
 		try {
-			await apiKeyService.deleteApiKey(deleteKeyToConfirm);
-
-			// Refresh the list to get updated data from server
-			await loadApiKeys();
-
-			showDeleteModal = false;
-			deleteKeyToConfirm = null;
-			deleteConfirmText = '';
+			// Make the API call
+			await apiKeyService.deleteApiKey(keyToDelete);
+			// Success - the optimistic update was correct, no need to do anything
 		} catch (err) {
+			// Revert the optimistic update on error
+			apiKeys = originalApiKeys;
 			console.error('Delete error:', err);
 			error = err instanceof Error ? err.message : 'Failed to delete API key';
 		}
