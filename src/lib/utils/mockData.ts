@@ -56,6 +56,31 @@ export function generateMockLiveEvent(): LiveEvent {
     else severity = "DEBUG";
   }
 
+  // Generate random tags
+  const allTags = [
+    "frontend",
+    "backend",
+    "api",
+    "database",
+    "auth",
+    "payment",
+    "mobile",
+    "web",
+    "critical",
+    "performance",
+    "security",
+    "user-action",
+    "system",
+    "analytics",
+  ];
+  const numTags = Math.random() < 0.7 ? Math.floor(Math.random() * 3) + 1 : 0; // 70% chance to have 1-3 tags
+  const tags =
+    numTags > 0
+      ? Array.from({ length: numTags }, () => randomChoice(allTags)).filter(
+          (tag, index, arr) => arr.indexOf(tag) === index
+        )
+      : undefined;
+
   return {
     id: Math.random().toString(36).substr(2, 9),
     eventName,
@@ -65,6 +90,7 @@ export function generateMockLiveEvent(): LiveEvent {
     timestamp,
     timeAgo: "just now",
     severity,
+    tags,
   };
 }
 

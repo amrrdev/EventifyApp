@@ -442,26 +442,43 @@
 							{#if realtimeEvents.length > 0}
 								<div class="space-y-2">
 									{#each realtimeEvents.slice(0, 25) as event}
-										<div class="flex items-center space-x-3 text-sm font-mono py-2 px-3 rounded {event.severity === 'ERROR' ? 'bg-[#2d1b1b] border border-[#744444]' : ''}">
-											<span class="{getSeverityColor(event.severity)} flex items-center space-x-1">
-												<span>{getSeverityIcon(event.severity)}</span>
-												<span class="text-xs">{event.severity || 'INFO'}</span>
-											</span>
-											<span class="text-[#a0aec0] w-16 text-xs">
-												{event.timestamp.toLocaleTimeString().slice(0, 8)}
-											</span>
-											<span class="text-[#63b3ed] min-w-0 flex-1 text-xs">
-												{event.eventName}
-											</span>
-											<span class="text-[#a0aec0] w-24 truncate text-xs">
-												{event.userId}
-											</span>
-											<span class="text-[#ed8936] w-8 text-xs">
-												{event.country}
-											</span>
-											<span class="text-sm">
-												{getDeviceIcon(event.device)}
-											</span>
+										<div class="flex flex-col space-y-1 text-sm font-mono py-2 px-3 rounded {event.severity === 'ERROR' ? 'bg-[#2d1b1b] border border-[#744444]' : ''}">
+											<!-- Main event info -->
+											<div class="flex items-center space-x-3">
+												<span class="{getSeverityColor(event.severity)} flex items-center space-x-1">
+													<span>{getSeverityIcon(event.severity)}</span>
+													<span class="text-xs">{event.severity || 'INFO'}</span>
+												</span>
+												<span class="text-[#a0aec0] w-16 text-xs">
+													{event.timestamp.toLocaleTimeString().slice(0, 8)}
+												</span>
+												<span class="text-[#63b3ed] min-w-0 flex-1 text-xs">
+													{event.eventName}
+												</span>
+												<span class="text-[#a0aec0] w-24 truncate text-xs">
+													{event.userId}
+												</span>
+												<span class="text-[#ed8936] w-8 text-xs">
+													{event.country}
+												</span>
+												<span class="text-sm">
+													{getDeviceIcon(event.device)}
+												</span>
+											</div>
+
+											<!-- Tags row (if exists) -->
+											{#if event.tags && event.tags.length > 0}
+												<div class="flex items-center space-x-2 ml-16">
+													<span class="text-[#a0aec0] text-xs">tags:</span>
+													<div class="flex flex-wrap gap-1">
+														{#each event.tags as tag}
+															<span class="bg-[#4a5568] text-[#e2e8f0] px-2 py-0.5 rounded text-xs font-mono">
+																{tag}
+															</span>
+														{/each}
+													</div>
+												</div>
+											{/if}
 										</div>
 									{/each}
 								</div>

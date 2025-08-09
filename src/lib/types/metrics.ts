@@ -12,6 +12,7 @@ export interface LiveEvent {
   timestamp: Date;
   timeAgo: string;
   severity?: "INFO" | "WARN" | "ERROR" | "DEBUG";
+  tags?: string[];
 }
 
 export interface PerformanceMetrics {
