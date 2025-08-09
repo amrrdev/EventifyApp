@@ -11,6 +11,7 @@ export interface LiveEvent {
   device: "mobile" | "web" | "tablet";
   timestamp: Date;
   timeAgo: string;
+  severity?: "INFO" | "WARN" | "ERROR" | "DEBUG";
 }
 
 export interface PerformanceMetrics {
