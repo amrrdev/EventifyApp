@@ -142,12 +142,20 @@
 
 	function getEventIcon(eventName: string): string {
 		switch (eventName.toLowerCase()) {
+			// Individual events
 			case 'login': return '🔐';
 			case 'logout': return '🚪';
 			case 'purchase': return '💳';
 			case 'signup': return '📝';
 			case 'view': return '👁️';
 			case 'click': return '👆';
+			// Event categories
+			case 'authentication': return '🔐';
+			case 'commerce': return '💳';
+			case 'user activity': return '👤';
+			case 'system events': return '⚙️';
+			case 'api calls': return '🔗';
+			case 'errors': return '🚨';
 			default: return '⚡';
 		}
 	}
@@ -358,7 +366,7 @@
 				</div>
 			</div>
 
-			<!-- Middle Row: Event Categories Chart -->
+			<!-- Event Categories Chart -->
 			{#if metrics && metrics.eventDistribution && metrics.eventDistribution.length > 0}
 				<div class="mb-6">
 					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
@@ -371,17 +379,17 @@
 							</span>
 						</div>
 
-						<!-- Event Distribution Chart -->
-						<div class="space-y-3">
-							{#each metrics.eventDistribution.slice(0, 8) as category}
+						<!-- Clean Progress Bar Chart -->
+						<div class="space-y-4">
+							{#each metrics.eventDistribution.slice(0, 6) as category}
 								<div class="flex items-center space-x-4">
-									<!-- Event Icon and Name -->
-									<div class="flex items-center space-x-2 w-32">
+									<!-- Category Icon and Name -->
+									<div class="flex items-center space-x-3 w-40">
 										<span class="text-lg">{getEventIcon(category.name)}</span>
-										<span class="text-[#a0aec0] font-mono text-sm truncate">{category.name}</span>
+										<span class="text-[#a0aec0] font-mono text-sm">{category.name}</span>
 									</div>
 
-									<!-- Progress Bar -->
+									<!-- Clean Progress Bar -->
 									<div class="flex-1 bg-[#1a202c] rounded-full h-4 relative overflow-hidden">
 										<div
 											class="bg-gradient-to-r from-[#63b3ed] to-[#68d391] h-full rounded-full transition-all duration-500"
@@ -394,8 +402,8 @@
 										</div>
 									</div>
 
-									<!-- Count -->
-									<div class="w-16 text-right">
+									<!-- Count - Better spacing -->
+									<div class="w-20 text-right">
 										<span class="text-[#68d391] font-mono text-sm font-bold">
 											{formatNumber(category.value)}
 										</span>
@@ -407,10 +415,10 @@
 				</div>
 			{/if}
 
-			<!-- Bottom Row: Live Events and Quick Analytics -->
-			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-				<!-- Live Events Feed (3 columns) -->
-				<div class="lg:col-span-3">
+			<!-- Bottom Row: Live Events and Analytics -->
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<!-- Live Events Feed (2 columns) - FIRST -->
+				<div class="lg:col-span-2 order-1">
 					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg">
 						<!-- Header -->
 						<div class="flex items-center justify-between px-4 py-3 border-b border-[#4a5568]">
@@ -465,8 +473,8 @@
 					</div>
 				</div>
 
-				<!-- Quick Analytics Sidebar (1 column) -->
-				<div class="lg:col-span-1 space-y-4">
+				<!-- Quick Analytics Sidebar (1 column) - SECOND -->
+				<div class="lg:col-span-1 order-2 space-y-4">
 					{#if metrics}
 						<!-- Top Events -->
 						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
@@ -488,32 +496,7 @@
 							</div>
 						</div>
 
-						<!-- Event Categories -->
-						{#if metrics.eventDistribution && metrics.eventDistribution.length > 0}
-							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
-								<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
-									<span class="text-[#ed8936]">event</span>_categories
-								</h3>
-								<div class="space-y-2">
-									{#each metrics.eventDistribution.slice(0, 6) as category}
-										<div class="flex items-center justify-between">
-											<div class="flex items-center space-x-2">
-												<span class="text-sm">{getEventIcon(category.name)}</span>
-												<span class="text-[#a0aec0] font-mono text-xs">{category.name}</span>
-											</div>
-											<div class="flex items-center space-x-2">
-												<span class="text-[#68d391] font-mono text-xs font-bold">
-													{formatNumber(category.value)}
-												</span>
-												<span class="text-[#63b3ed] font-mono text-xs">
-													({category.percentage}%)
-												</span>
-											</div>
-										</div>
-									{/each}
-								</div>
-							</div>
-						{/if}
+
 
 						<!-- System Health -->
 						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
@@ -558,6 +541,61 @@
 								{/each}
 							</div>
 						</div>
+
+						<!-- Event Categories Pie Chart -->
+						{#if metrics.eventDistribution && metrics.eventDistribution.length > 0}
+							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+								<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
+									<span class="text-[#ed8936]">pie</span>_chart
+								</h3>
+
+								<!-- Simple Pie Chart -->
+								<div class="relative w-32 h-32 mx-auto mb-4">
+									<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+										{#each metrics.eventDistribution.slice(0, 5) as category, i}
+											{@const colors = ['#63b3ed', '#68d391', '#ed8936', '#f56565', '#9f7aea']}
+											{@const color = colors[i % colors.length]}
+											{@const total = metrics.eventDistribution.slice(0, 5).reduce((sum, item) => sum + item.value, 0)}
+											{@const percentage = (category.value / total) * 100}
+											{@const circumference = 2 * Math.PI * 15.9155}
+											{@const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`}
+											{@const previousPercentages = metrics.eventDistribution.slice(0, i).reduce((sum, item) => sum + ((item.value / total) * 100), 0)}
+											{@const strokeDashoffset = -previousPercentages * circumference / 100}
+
+											<circle
+												cx="50"
+												cy="50"
+												r="15.9155"
+												fill="transparent"
+												stroke={color}
+												stroke-width="31.831"
+												stroke-dasharray={strokeDasharray}
+												stroke-dashoffset={strokeDashoffset}
+												opacity="0.9"
+												class="transition-all duration-500"
+											/>
+										{/each}
+									</svg>
+								</div>
+
+								<!-- Compact Legend -->
+								<div class="space-y-1">
+									{#each metrics.eventDistribution.slice(0, 5) as category, i}
+										{@const colors = ['#63b3ed', '#68d391', '#ed8936', '#f56565', '#9f7aea']}
+										{@const color = colors[i % colors.length]}
+										<div class="flex items-center justify-between text-xs">
+											<div class="flex items-center space-x-1">
+												<div class="w-2 h-2 rounded-full" style="background-color: {color}"></div>
+												<span class="text-[#a0aec0] font-mono text-xs truncate">{category.name}</span>
+											</div>
+											<span class="text-[#68d391] font-mono text-xs font-bold">
+												{category.percentage}%
+											</span>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/if}
 					{:else}
 						<!-- Loading Analytics -->
 						{#each Array(4) as _}

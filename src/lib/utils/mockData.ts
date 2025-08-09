@@ -83,14 +83,22 @@ export function generateMockDashboardData(): MetricsDashboard {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  const eventDistribution = eventNames.map((name) => {
-    const value = randomNumber(100, 1000);
-    return {
-      name,
-      value,
-      percentage: Math.round((value / 5000) * 100),
-    };
-  });
+  // Create proper event categories instead of individual events
+  const eventCategories = [
+    { name: "Authentication", value: randomNumber(800, 1500) },
+    { name: "Commerce", value: randomNumber(600, 1200) },
+    { name: "User Activity", value: randomNumber(500, 1000) },
+    { name: "System Events", value: randomNumber(300, 800) },
+    { name: "API Calls", value: randomNumber(400, 900) },
+    { name: "Errors", value: randomNumber(50, 200) },
+  ];
+
+  const totalCategoryEvents = eventCategories.reduce((sum, cat) => sum + cat.value, 0);
+  const eventDistribution = eventCategories.map((category) => ({
+    name: category.name,
+    value: category.value,
+    percentage: Math.round((category.value / totalCategoryEvents) * 100),
+  }));
 
   const geographicDistribution = countries
     .map((country) => ({
