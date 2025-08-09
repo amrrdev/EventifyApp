@@ -1,177 +1,462 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { websocketService, wsState, dashboardData, fullEvents } from '$lib/services/websocket';
-import type { WebSocketState, LiveEvent, MetricsDashboard } from '$lib/types/metrics';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { authStore } from '$lib/stores/auth';
+  import { eventsService } from '$lib/services/eventsService';
+  import type { EventItem, EventsFilters, EventSeverity } from '$lib/types/events';
 
-let wsConnectionState = $state<WebSocketState>({ connected:false, connecting:false, error:null, lastUpdate:null });
-let dash = $state<MetricsDashboard | null>(null);
-let events = $state<LiveEvent[]>([]);
-let rawFull = $state<any[]>([]); // full events with payloads
-let expanded = $state<Set<string>>(new Set());
-// Grouped view (deduplicate same name+second)
-interface GroupedEvent {
-	key: string;
-	eventName: string;
-	timestamp: Date;
-	count: number;
-	samples: LiveEvent[];
-}
+  let authState = $state($authStore);
+  let isCheckingAuth = $state(true);
 
-let groupedEvents = $state<GroupedEvent[]>([]);
+  // UI state
+  let loading = $state(false);
+  let error = $state<string | null>(null);
 
-$effect(()=>{
-	if (!events.length) { groupedEvents = []; return; }
-	const map = new Map<string, GroupedEvent>();
-	// payload index by key (eventName|second)
-	const payloadIndex = new Map<string, any[]>();
-	for (const fe of rawFull) {
-		const ts = fe.timestamp instanceof Date ? fe.timestamp : new Date(fe.timestamp);
-		const key = `${fe.eventName}|${Math.floor(ts.getTime()/1000)}`;
-		if (!payloadIndex.has(key)) payloadIndex.set(key, []);
-		const arr = payloadIndex.get(key)!;
-		if (fe.payload && arr.length < 5) arr.push(fe.payload);
-	}
-	for (const ev of events) {
-		const ts = ev.timestamp instanceof Date ? ev.timestamp : new Date(ev.timestamp as any);
-		const second = Math.floor(ts.getTime() / 1000);
-		const key = `${ev.eventName}|${second}`;
-		const existing = map.get(key);
-		if (existing) {
-			existing.count += 1;
-			if (existing.samples.length < 5) existing.samples.push(ev);
-		} else {
-			map.set(key, { key, eventName: ev.eventName, timestamp: ts, count: 1, samples: [ev] });
-		}
-	}
-	const orderedKeys: string[] = [];
-	for (const ev of events) {
-		const ts = ev.timestamp instanceof Date ? ev.timestamp : new Date(ev.timestamp as any);
-		const second = Math.floor(ts.getTime() / 1000);
-		const key = `${ev.eventName}|${second}`;
-		if (!orderedKeys.includes(key)) orderedKeys.push(key);
-	}
-	groupedEvents = orderedKeys.map(k => {
-		const g = map.get(k)!;
-		const payloads = payloadIndex.get(k) || [];
-		if (payloads.length) {
-			g.samples = g.samples.map((s,i) => ({ ...s, payload: payloads[i] ?? (s as any).payload }));
-		}
-		return g;
-	}).slice(0, 200);
-});
+  // Data
+  let events = $state<EventItem[]>([]);
+  let page = $state(1);
+  let limit = $state(25);
+  let total = $state(0);
+  let totalPages = $state(0);
 
-// Subscribe to state stores
-$effect(()=>{
-	const unsubWs = wsState.subscribe(v=> wsConnectionState = v);
-	const unsubDash = dashboardData.subscribe(v=> {
-		dash = v;
-		if (v?.liveEvents) {
-			// Ensure timestamps are Date objects and newest first
-			events = [...v.liveEvents]
-				.map(e => ({ ...e, timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp) }))
-				.sort((a,b)=> (b.timestamp as any) - (a.timestamp as any));
-		}
-	});
-	const unsubFull = fullEvents.subscribe(v => {
-		rawFull = v.map(ev => ({ ...ev, timestamp: ev.timestamp instanceof Date ? ev.timestamp : new Date(ev.timestamp) }));
-	});
-	return ()=> { unsubWs(); unsubDash(); unsubFull(); };
-});
+  // Filters
+  let searchEventName = $state('');
+  let category = $state('');
+  let severity = $state<EventSeverity | ''>('');
+  let fromDate = $state<string | null>(null);
+  let toDate = $state<string | null>(null);
+  let tagsInput = $state(''); // comma-separated
+  let sortBy = $state<'timestamp' | 'createdAt' | 'eventName' | 'severity'>('timestamp');
+  let sortOrder = $state<'asc' | 'desc'>('desc');
 
-onMount(async ()=>{
-	// Just connect; token is added in service via query param
-	await websocketService.connect();
-});
+  let selectedIds = $state<Set<string>>(new Set());
+  let confirmDeleteOpen = $state(false);
 
-function handleReconnect(){
-	websocketService.reconnect();
-}
+  const debounced = (fn: () => void, delay = 400) => {
+    let t: any;
+    return () => {
+      clearTimeout(t);
+      t = setTimeout(fn, delay);
+    };
+  };
 
-function formatTs(ts:any){
-	const d = ts instanceof Date ? ts : new Date(ts);
-	return d.toLocaleString();
-}
+  const debouncedRefetch = debounced(() => {
+    page = 1;
+    fetchEvents();
+  }, 450);
+
+  onMount(async () => {
+    await new Promise((r) => setTimeout(r, 150));
+    authState = $authStore;
+    if (!authState.isAuthenticated) {
+      const success = await authStore.initAuth();
+      if (!success) {
+        goto('/auth/sign-in');
+        return;
+      }
+      authState = $authStore;
+    }
+    isCheckingAuth = false;
+    await fetchEvents();
+  });
+
+  async function fetchEvents() {
+    loading = true;
+    error = null;
+    try {
+      const fromIso = fromDate ? new Date(fromDate).toISOString() : undefined;
+      const toIso = toDate ? new Date(toDate).toISOString() : undefined;
+      const filters: EventsFilters = {
+        page,
+        limit,
+        eventName: searchEventName || undefined,
+        category: category || undefined,
+        severity: (severity as EventSeverity) || undefined,
+        fromDate: fromIso,
+        toDate: toIso,
+        tags: tagsInput
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
+        sortBy,
+        sortOrder,
+      };
+      const res = await eventsService.getEvents(filters);
+      events = res.events || [];
+      page = res.page;
+      limit = res.limit;
+      total = res.total;
+      totalPages = res.totalPages;
+      selectedIds = new Set();
+    } catch (e: any) {
+      error = e?.message || 'Failed to load events';
+      events = [];
+    } finally {
+      loading = false;
+    }
+  }
+
+  function toggleSelect(id: string) {
+    if (selectedIds.has(id)) selectedIds.delete(id);
+    else selectedIds.add(id);
+    selectedIds = new Set(selectedIds);
+  }
+
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    try {
+      if (ids.length === 1) {
+        await eventsService.deleteEvent(ids[0]);
+      } else {
+        await eventsService.deleteEventsBatch({ ids });
+      }
+      // Optimistically update UI
+      events = events.filter((e) => !selectedIds.has(e._id));
+      selectedIds = new Set();
+      confirmDeleteOpen = false;
+      // If list becomes empty, refetch current page
+      if (events.length === 0 && page > 1) {
+        page = page - 1;
+        await fetchEvents();
+      }
+    } catch (e: any) {
+      error = e?.message || 'Failed to delete events';
+    }
+  }
+
+  function clearFilters() {
+    searchEventName = '';
+    category = '';
+    severity = '';
+    fromDate = null;
+    toDate = null;
+    tagsInput = '';
+    sortBy = 'timestamp';
+    sortOrder = 'desc';
+    page = 1;
+    fetchEvents();
+  }
+
+  function formatDateTime(iso?: string | null) {
+    if (!iso) return '-';
+    try {
+      const dt = new Date(iso);
+      return dt.toLocaleString();
+    } catch {
+      return iso as string;
+    }
+  }
+
+  function severityBadgeClasses(s?: EventSeverity) {
+    switch (s) {
+      case 'ERROR':
+        return 'bg-[#2d1b1b] text-[#f56565] border-[#744444]';
+      case 'WARN':
+        return 'bg-[#2d291b] text-[#ed8936] border-[#8a5a2b]';
+      case 'INFO':
+        return 'bg-[#1b2430] text-[#63b3ed] border-[#465a73]';
+      default:
+        return 'bg-[#1b2d1b] text-[#68d391] border-[#3f5a42]';
+    }
+  }
 </script>
 
 <svelte:head>
-	<title>Events Monitor - Eventify</title>
-	<meta name="description" content="Real-time event monitoring with full payload details" />
+  <title>Events Repository - Eventify</title>
+  <meta name="description" content="Browse and search historical events" />
 </svelte:head>
 
-<div class="min-h-screen bg-[#1a1d23]">
-		<header class="bg-[#2d3748] border-b border-[#4a5568] shadow-lg">
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-				<div class="flex items-center space-x-4">
-					<div class="w-8 h-8 bg-[#1a202c] border border-[#4a5568] flex items-center justify-center font-mono text-sm text-[#a0aec0]">🔍</div>
-					<div class="font-mono text-[#e2e8f0]"><span class="text-[#ed8936]">events</span>:<span class="text-[#68d391]">live</span></div>
-				</div>
-				<div class="font-mono text-xs text-[#a0aec0] flex gap-4">
-					<span>events: {dash?.totalEvents ?? 0}</span>
-					<span>active_users: {dash?.activeUsers ?? 0}</span>
-					<span>latest_displayed: {events.length}</span>
-				</div>
-			</div>
-		</header>
+{#if isCheckingAuth}
+  <div class="min-h-screen bg-[#1a202c] flex items-center justify-center">
+    <div class="text-[#a0aec0] font-mono">Loading session...</div>
+  </div>
+{:else}
+  <main class="min-h-screen bg-[#0f1520] text-[#e2e8f0]">
+    <!-- Header -->
+    <div class="border-b border-[#283347] bg-[#121826] sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <a href="/dashboard" class="text-[#63b3ed] hover:text-[#90cdf4] font-mono text-sm transition-colors">← dashboard</a>
+            <div>
+              <h1 class="text-2xl font-mono font-bold">
+                <span class="text-[#ed8936]">events</span>_repository
+              </h1>
+              <p class="text-[#a0aec0] font-mono text-xs">Search, filter, and manage your historical events</p>
+            </div>
+          </div>
 
-		<!-- Main Content -->
-		<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center space-x-3">
+            <button onclick={clearFilters} class="px-4 py-2 rounded border border-[#4a5568] font-mono text-sm hover:bg-[#1e2636]">reset_filters</button>
+            <button onclick={() => fetchEvents()} class="px-4 py-2 bg-[#2d3748] border border-[#63b3ed] text-[#63b3ed] font-mono text-sm rounded hover:bg-[#63b3ed] hover:text-[#0f1520] transition-colors">refresh()</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Filters -->
+    <section class="max-w-7xl mx-auto px-6 py-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div class="md:col-span-4">
+          <input
+            type="text"
+            placeholder="Search event name..."
+            bind:value={searchEventName}
+            oninput={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] placeholder-[#667892] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          />
+        </div>
 
-			<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4 mb-4 font-mono text-sm text-[#a0aec0]">Showing dashboard_data.liveEvents (newest first, retained after refresh)</div>
+        <div class="md:col-span-2">
+          <input
+            type="text"
+            placeholder="Category"
+            bind:value={category}
+            oninput={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] placeholder-[#667892] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          />
+        </div>
 
-			<!-- Events List -->
-						<div class="space-y-2">
-							{#if events.length === 0}
-								<div class="text-[#a0aec0] font-mono text-sm">Waiting for events...</div>
-							{:else}
-								{#each groupedEvents as g (g.key)}
-								  <div class="bg-[#2d3748] border border-[#4a5568] rounded font-mono text-xs text-[#e2e8f0]">
-									<button type="button" class="w-full text-left flex items-center justify-between gap-4 px-3 py-2 hover:bg-[#374151] focus:outline-none" onclick={() => { const n = new Set(expanded); n.has(g.key) ? n.delete(g.key) : n.add(g.key); expanded = n; }}>
-										<div class="flex flex-wrap items-center gap-4">
-											<span><strong class="text-[#63b3ed]">name</strong>: {g.eventName}</span>
-											<span><strong class="text-[#9f7aea]">time</strong>: {formatTs(g.timestamp)}</span>
-											{#if g.count > 1}
-												<span class="px-2 py-0.5 bg-[#1a202c] border border-[#4a5568] rounded text-[#ed8936]">x{g.count}</span>
-											{/if}
-										</div>
-										<div class="text-[#a0aec0]">{expanded.has(g.key) ? '▼' : '▶'}</div>
-									</button>
-									{#if expanded.has(g.key)}
-										<div class="px-3 pb-3 space-y-2">
-											{#if g.samples.some(s => (s as any).payload)}
-												<div>
-													<div class="text-[#a0aec0] mb-1">payload sample{g.count>1 ? 's':''} (up to 5):</div>
-													{#each g.samples as s (s.id)}
-														{#if (s as any).payload}
-															<pre class="mt-1 bg-[#1a202c] border border-[#4a5568] rounded p-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify((s as any).payload, null, 2)}</pre>
-														{/if}
-													{/each}
-												</div>
-											{:else}
-												<div class="text-[#a0aec0] italic">waiting for payloads on events channel...</div>
-											{/if}
-										</div>
-									{/if}
-								</div>
-								{/each}
-							{/if}
-						</div>
-		</main>
-	</div>
+        <div class="md:col-span-2">
+          <select
+            bind:value={severity}
+            onchange={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          >
+            <option value="">Severity</option>
+            <option value="INFO">INFO</option>
+            <option value="WARN">WARN</option>
+            <option value="ERROR">ERROR</option>
+            <option value="SEVERITY_UNSPECIFIED">UNSPECIFIED</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <input
+            type="datetime-local"
+            bind:value={fromDate}
+            onchange={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          />
+        </div>
+
+        <div class="md:col-span-2">
+          <input
+            type="datetime-local"
+            bind:value={toDate}
+            onchange={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          />
+        </div>
+
+        <div class="md:col-span-6">
+          <input
+            type="text"
+            placeholder="Tags (comma-separated)"
+            bind:value={tagsInput}
+            oninput={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] placeholder-[#667892] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          />
+        </div>
+
+        <div class="md:col-span-3">
+          <select
+            bind:value={sortBy}
+            onchange={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          >
+            <option value="timestamp">Sort by timestamp</option>
+            <option value="createdAt">Sort by createdAt</option>
+            <option value="eventName">Sort by eventName</option>
+            <option value="severity">Sort by severity</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-3">
+          <select
+            bind:value={sortOrder}
+            onchange={debouncedRefetch}
+            class="w-full px-4 py-3 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg focus:border-[#ed8936] focus:outline-none"
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content -->
+    <section class="max-w-7xl mx-auto px-6 pb-10">
+      {#if error}
+        <div class="mb-6 bg-[#2d1b1b] border border-[#744444] rounded-lg p-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-[#f56565]">🚨</span>
+            <span class="text-[#f56565] font-mono text-sm">{error}</span>
+            <button onclick={() => (error = null)} class="text-[#a0aec0] hover:text-[#e2e8f0] ml-auto">✕</button>
+          </div>
+        </div>
+      {/if}
+
+      <div class="bg-[#121826] border border-[#283347] rounded-xl overflow-hidden">
+        <!-- Table header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[#283347] bg-[#111625]">
+          <div class="text-[#a0aec0] font-mono text-sm">
+            {total.toLocaleString()} results • page {page} of {Math.max(totalPages, 1)}
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              onclick={() => (confirmDeleteOpen = true)}
+              disabled={selectedIds.size === 0}
+              class="px-3 py-2 rounded border border-[#f56565] text-[#f56565] font-mono text-sm hover:bg-[#f56565] hover:text-[#0f1520] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              delete_selected
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto">
+            <thead class="bg-[#111625]">
+              <tr class="text-left text-[#a0aec0] font-mono text-xs">
+                <th class="px-4 py-3 w-10">
+                  <input type="checkbox" onchange={(e) => {
+                    const checked = (e.target as HTMLInputElement).checked;
+                    if (checked) selectedIds = new Set(events.map((e) => e._id));
+                    else selectedIds = new Set();
+                  }} />
+                </th>
+                <th class="px-4 py-3">event</th>
+                <th class="px-4 py-3">severity</th>
+                <th class="px-4 py-3">category</th>
+                <th class="px-4 py-3">tags</th>
+                <th class="px-4 py-3">timestamp</th>
+                <th class="px-4 py-3">created</th>
+                <th class="px-4 py-3">actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#if loading}
+                {#each Array(8) as _}
+                  <tr class="border-t border-[#283347]">
+                    {#each Array(8) as __}
+                      <td class="px-4 py-3">
+                        <div class="h-4 bg-[#1a2232] rounded animate-pulse"></div>
+                      </td>
+                    {/each}
+                  </tr>
+                {/each}
+              {:else if events.length === 0}
+                <tr>
+                  <td colspan="8" class="px-4 py-10 text-center text-[#a0aec0] font-mono">
+                    No events found. Try adjusting filters.
+                  </td>
+                </tr>
+              {:else}
+                {#each events as ev}
+                  <tr class="border-t border-[#283347] hover:bg-[#151c2c]">
+                    <td class="px-4 py-3">
+                      <input type="checkbox" checked={selectedIds.has(ev._id)} onchange={() => toggleSelect(ev._id)} />
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-[#63b3ed] font-mono text-sm">{ev.eventName}</span>
+                        <code class="text-[#667892] text-xs">{ev._id.slice(0, 6)}</code>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="text-xs font-mono px-2 py-1 rounded border {severityBadgeClasses(ev.severity)}">{ev.severity || 'INFO'}</span>
+                    </td>
+                    <td class="px-4 py-3 text-[#a0aec0] font-mono text-sm">{ev.category || '-'}</td>
+                    <td class="px-4 py-3">
+                      <div class="flex flex-wrap gap-1">
+                        {#each (ev.tags || []).slice(0, 4) as tag}
+                          <span class="bg-[#283347] text-[#e2e8f0] px-2 py-0.5 rounded text-xs font-mono">{tag}</span>
+                        {/each}
+                        {#if (ev.tags?.length || 0) > 4}
+                          <span class="text-[#667892] text-xs font-mono">+{(ev.tags!.length - 4)}</span>
+                        {/if}
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-[#a0aec0] font-mono text-sm">{formatDateTime(ev.timestamp)}</td>
+                    <td class="px-4 py-3 text-[#a0aec0] font-mono text-sm">{formatDateTime(ev.createdAt)}</td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center space-x-2">
+                        <button
+                          onclick={async () => { try { await eventsService.deleteEvent(ev._id); events = events.filter((e) => e._id !== ev._id); } catch (e) { error = (e as any)?.message || 'Delete failed'; } }}
+                          class="px-3 py-1 rounded border border-[#f56565] text-[#f56565] font-mono text-xs hover:bg-[#f56565] hover:text-[#0f1520]"
+                        >
+                          delete
+                        </button>
+                        <details>
+                          <summary class="cursor-pointer text-[#63b3ed] font-mono text-xs">payload</summary>
+                          <pre class="mt-2 bg-[#0b111b] border border-[#283347] rounded p-3 text-xs overflow-auto max-h-60">{JSON.stringify(ev.payload, null, 2)}</pre>
+                        </details>
+                      </div>
+                    </td>
+                  </tr>
+                {/each}
+              {/if}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between px-4 py-3 border-t border-[#283347] bg-[#111625]">
+          <div class="text-[#a0aec0] font-mono text-xs">Selected: {selectedIds.size}</div>
+          <div class="flex items-center space-x-2">
+            <button
+              onclick={() => { if (page > 1) { page = page - 1; fetchEvents(); } }}
+              class="px-3 py-2 rounded border border-[#4a5568] font-mono text-sm hover:bg-[#1e2636] disabled:opacity-50"
+              disabled={page <= 1 || loading}
+            >
+              prev
+            </button>
+            <div class="text-[#a0aec0] font-mono text-sm">
+              {page} / {Math.max(totalPages, 1)}
+            </div>
+            <button
+              onclick={() => { if (page < totalPages) { page = page + 1; fetchEvents(); } }}
+              class="px-3 py-2 rounded border border-[#4a5568] font-mono text-sm hover:bg-[#1e2636] disabled:opacity-50"
+              disabled={page >= totalPages || loading}
+            >
+              next
+            </button>
+            <select
+              bind:value={limit}
+              onchange={() => { page = 1; fetchEvents(); }}
+              class="ml-2 px-3 py-2 font-mono text-sm bg-[#121826] border border-[#283347] text-[#e2e8f0] rounded-lg"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {#if confirmDeleteOpen}
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-[#121826] border border-[#283347] rounded-lg p-6 w-full max-w-md mx-4">
+          <h2 class="text-xl font-mono font-bold mb-4"><span class="text-[#f56565]">delete</span>_events</h2>
+          <p class="text-[#a0aec0] font-mono text-sm mb-4">This will permanently delete {selectedIds.size} event(s).</p>
+          <div class="flex items-center space-x-3">
+            <button onclick={deleteSelected} class="flex-1 bg-[#f56565] hover:bg-[#e53e3e] text-[#0f1520] font-mono font-bold px-4 py-2 rounded">Delete</button>
+            <button onclick={() => (confirmDeleteOpen = false)} class="px-4 py-2 border border-[#4a5568] rounded font-mono text-sm hover:bg-[#1e2636]">Cancel</button>
+          </div>
+        </div>
+      </div>
+    {/if}
+  </main>
+{/if}
 
 <style>
-	/* Custom scrollbar for event list */
-	:global(.overflow-y-auto::-webkit-scrollbar) {
-		width: 8px;
-	}
-	:global(.overflow-y-auto::-webkit-scrollbar-track) {
-		background: #1a202c;
-	}
-	:global(.overflow-y-auto::-webkit-scrollbar-thumb) {
-		background: #4a5568;
-		border-radius: 4px;
-	}
-	:global(.overflow-y-auto::-webkit-scrollbar-thumb:hover) {
-		background: #63b3ed;
-	}
+  /* Narrow scrollbar for payload pre */
+  pre::-webkit-scrollbar { width: 6px; height: 6px; }
+  pre::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 4px; }
 </style>
+
+
