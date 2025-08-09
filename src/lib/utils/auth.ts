@@ -13,29 +13,41 @@ import { goto } from '$app/navigation';
  * This should be called when the application first loads
  */
 export async function initializeAuth(): Promise<boolean> {
-  if (!browser) return false;
+  if (!browser) {
+    console.log('🔴 initializeAuth: Not in browser, returning false');
+    return false;
+  }
+
+  console.log('🔵 initializeAuth: Starting authentication initialization...');
 
   try {
     // Try to get a new access token using the HTTP-only refresh token cookie
+    console.log('🔵 initializeAuth: Calling authAPI.initialize()...');
     const success = await authAPI.initialize();
+    console.log('🔵 initializeAuth: authAPI.initialize() result:', success);
     
     if (success) {
+      console.log('🔵 initializeAuth: Getting user profile...');
       // Get user profile data
       const user = await authAPI.getUserProfile();
       const accessToken = authAPI.getAccessToken();
+      console.log('🔵 initializeAuth: User profile:', user);
+      console.log('🔵 initializeAuth: Access token exists:', !!accessToken);
       
       if (user && accessToken) {
         // Set authentication state
+        console.log('🟢 initializeAuth: Setting auth state and returning true');
         authStore.setAuth(user, accessToken);
         return true;
       }
     }
     
     // No valid authentication found
+    console.log('🔴 initializeAuth: No valid auth found, clearing auth and returning false');
     authStore.clearAuth();
     return false;
   } catch (error) {
-    console.error('Failed to initialize authentication:', error);
+    console.error('🔴 initializeAuth: Failed to initialize authentication:', error);
     authStore.clearAuth();
     return false;
   }

@@ -46,15 +46,23 @@
 	onMount(async () => {
 		console.log('🔵 Dashboard onMount - Initial auth state:', authState);
 		
-		// Only check if user is already in auth store or try to restore from cookie if needed
-		let isAuthenticated = authState.isAuthenticated;
-		console.log('🔵 Dashboard - isAuthenticated from store:', isAuthenticated);
+		// Wait longer for layout to finish initializing auth
+		await new Promise(resolve => setTimeout(resolve, 200));
 		
+		// Get fresh auth state after layout initialization
+		authState = $authStore;
+		let isAuthenticated = authState.isAuthenticated;
+		console.log('🔵 Dashboard - isAuthenticated from store after layout:', isAuthenticated);
+		console.log('🔵 Dashboard - Full auth state after layout:', authState);
+		
+		// Only try to restore auth if it's not already initialized by layout
 		if (!isAuthenticated) {
-			console.log('🔵 Dashboard - Attempting to restore session from cookie...');
+			console.log('🔵 Dashboard - Layout did not authenticate, attempting to restore session from cookie...');
 			// Try to restore session from cookie only if not already authenticated
 			isAuthenticated = await authStore.initAuth();
 			console.log('🔵 Dashboard - initAuth result:', isAuthenticated);
+		} else {
+			console.log('🟢 Dashboard - Layout already authenticated user, skipping auth check');
 		}
 		
 		isCheckingAuth = false;

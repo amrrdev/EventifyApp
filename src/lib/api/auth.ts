@@ -28,11 +28,13 @@ export interface ResendOtpRequest {
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
   user: any; // User data returned from backend
 }
 
 export interface RefreshResponse {
   accessToken: string;
+  refreshToken?: string; // Optional in case backend doesn't rotate refresh tokens
 }
 
 export interface ApiError {
@@ -58,6 +60,7 @@ class AuthAPI {
   getAccessToken(): string | null {
     return this.accessToken;
   }
+
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -155,6 +158,11 @@ class AuthAPI {
     try {
       const response = await this.refreshTokenFromCookie();
       this.accessToken = response.accessToken;
+      
+      // Refresh token rotation is handled automatically by HTTP-only cookies
+      if (response.refreshToken) {
+        console.log('🔄 AuthAPI: Refresh token rotated - backend updated HTTP-only cookie');
+      }
 
       // Update the auth store
       const { authStore } = await import("$lib/stores/auth");
@@ -177,7 +185,7 @@ class AuthAPI {
   }
 
   private clearAuthAndRedirect(): void {
-    // Clear in-memory token
+    // Clear in-memory access token
     this.accessToken = null;
 
     // Import and clear auth store
@@ -187,7 +195,7 @@ class AuthAPI {
 
     // Redirect to sign-in page
     if (typeof window !== "undefined") {
-      window.location.href = "/sign-in";
+      window.location.href = "/auth/sign-in";
     }
   }
 
@@ -204,8 +212,9 @@ class AuthAPI {
       body: JSON.stringify(credentials),
     });
 
-    // Store access token in memory
+    // Store both tokens in memory
     this.accessToken = response.accessToken;
+    this.refreshToken = response.refreshToken;
 
     return response;
   }
@@ -226,9 +235,11 @@ class AuthAPI {
 
   // Refresh token using HTTP-only cookie
   async refreshTokenFromCookie(): Promise<RefreshResponse> {
+    console.log('🔵 AuthAPI: Attempting to refresh token using HTTP-only cookie');
+    
     return this.request("/auth/refresh-token", {
       method: "POST",
-      // No body needed - refresh token is in HTTP-only cookie
+      // No body needed - refresh token is sent automatically via HTTP-only cookie
     });
   }
 
@@ -242,8 +253,9 @@ class AuthAPI {
       // Even if backend call fails, we should clear local state
       console.error("Sign out error:", error);
     } finally {
-      // Clear in-memory token and auth state
+      // Clear in-memory tokens and auth state
       this.accessToken = null;
+      this.refreshToken = null;
       const { authStore } = await import("$lib/stores/auth");
       authStore.clearAuth();
     }
@@ -295,32 +307,25 @@ class AuthAPI {
   }
 
   private async _performInitialization(): Promise<boolean> {
-    // Check if refresh token cookie exists before making request
-    if (typeof document !== 'undefined') {
-      const cookies = document.cookie;
-      
-      // Check for refresh token cookie
-      const hasRefreshToken = cookies.includes('refreshToken=');
-      
-      if (!hasRefreshToken) {
-        // No refresh token cookie found - skip the request entirely
-        return false;
-      }
-    }
-
+    console.log('🔵 AuthAPI: Starting initialization...');
+    
     try {
+      console.log('🔵 AuthAPI: Attempting to refresh token from cookie...');
       const response = await this.refreshTokenFromCookie();
       this.accessToken = response.accessToken;
+      console.log('🟢 AuthAPI: Successfully refreshed token - returning true');
       return true;
     } catch (error: any) {
+      console.log('🔴 AuthAPI: Refresh failed:', error);
       // Silently handle expected cases where no refresh token exists
       if (error?.statusCode === 400 || error?.statusCode === 401) {
         // No valid refresh token available - this is expected for new/unauthenticated users
+        console.log('🔴 AuthAPI: Expected auth error (user not logged in) - returning false');
         return false;
       }
       
       // Log unexpected errors
-      console.error('Unexpected error during auth initialization:', error);
+      console.error('🔴 AuthAPI: Unexpected error during auth initialization:', error);
       return false;
     }
   }

@@ -22,12 +22,21 @@
 
 	// Check authentication
 	onMount(async () => {
+		// Wait a bit for layout to finish initializing auth
+		await new Promise(resolve => setTimeout(resolve, 100));
+		
 		// Get the current auth state (should be initialized by layout)
 		authState = $authStore;
-
-		if (!authState.isAuthenticated || !authState.accessToken) {
-			goto('/login');
-			return;
+		
+		// Try to restore session if not authenticated
+		if (!authState.isAuthenticated) {
+			const success = await authStore.initAuth();
+			if (!success) {
+				goto('/auth/sign-in');
+				return;
+			}
+			// Refresh auth state after initialization
+			authState = $authStore;
 		}
 
 		isCheckingAuth = false;
