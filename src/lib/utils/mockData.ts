@@ -120,7 +120,7 @@ export function generateMockDashboardData(): MetricsDashboard {
     activeUsersChange: (Math.random() - 0.5) * 15,
     eventsPerHour: randomNumber(500, 2000),
     eventsPerHourChange: (Math.random() - 0.5) * 25,
-    conversionRate: Math.random() * 10 + 2,
+    conversionRate: Math.random() * 8 + 3.5, // 3.5% to 11.5%
     conversionRateChange: (Math.random() - 0.5) * 5,
     eventVolumeData,
     topEvents,
