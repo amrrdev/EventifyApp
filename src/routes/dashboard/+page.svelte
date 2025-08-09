@@ -232,6 +232,12 @@
 						<span class="text-[#a0aec0] font-mono text-sm">
 							<span class="text-[#63b3ed]">user</span>: {authState.user.name}
 						</span>
+						<a
+							href="/api-keys"
+							class="px-3 py-1 bg-[#2d3748] border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded hover:bg-[#63b3ed] hover:text-[#1a202c] transition-colors"
+						>
+							🔑 api_keys
+						</a>
 						<button
 							onclick={toggleDemoMode}
 							class="px-3 py-1 bg-[#2d3748] border border-{demoMode ? '[#68d391]' : '[#ed8936]'} text-{demoMode ? '[#68d391]' : '[#ed8936]'} font-mono text-xs rounded hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:text-[#1a202c] transition-colors"
