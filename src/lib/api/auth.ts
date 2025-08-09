@@ -47,7 +47,8 @@ class AuthAPI {
   private accessToken: string | null = null;
   private isRefreshing = false;
   private refreshPromise: Promise<string> | null = null;
-  private refreshQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
+  private refreshQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> =
+    [];
   private isInitializing = false;
   private initializePromise: Promise<boolean> | null = null;
 
@@ -61,7 +62,6 @@ class AuthAPI {
     return this.accessToken;
   }
 
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
@@ -70,7 +70,7 @@ class AuthAPI {
         "Content-Type": "application/json",
         ...options.headers,
       },
-      credentials: 'include', // Always include cookies
+      credentials: "include", // Always include cookies
       ...options,
     });
 
@@ -102,7 +102,7 @@ class AuthAPI {
         Authorization: `Bearer ${this.accessToken}`,
         ...options.headers,
       },
-      credentials: 'include', // Include cookies for refresh token
+      credentials: "include", // Include cookies for refresh token
       ...options,
     });
 
@@ -118,7 +118,7 @@ class AuthAPI {
             Authorization: `Bearer ${newAccessToken}`,
             ...options.headers,
           },
-          credentials: 'include',
+          credentials: "include",
           ...options,
         });
 
@@ -158,10 +158,9 @@ class AuthAPI {
     try {
       const response = await this.refreshTokenFromCookie();
       this.accessToken = response.accessToken;
-      
+
       // Refresh token rotation is handled automatically by HTTP-only cookies
       if (response.refreshToken) {
-        console.log('🔄 AuthAPI: Refresh token rotated - backend updated HTTP-only cookie');
       }
 
       // Update the auth store
@@ -177,7 +176,7 @@ class AuthAPI {
       // Process queued requests with error
       this.refreshQueue.forEach(({ reject }) => reject(error));
       this.refreshQueue = [];
-      
+
       throw error;
     } finally {
       this.isRefreshing = false;
@@ -235,8 +234,6 @@ class AuthAPI {
 
   // Refresh token using HTTP-only cookie
   async refreshTokenFromCookie(): Promise<RefreshResponse> {
-    console.log('🔵 AuthAPI: Attempting to refresh token using HTTP-only cookie');
-    
     return this.request("/auth/refresh-token", {
       method: "POST",
       // No body needed - refresh token is sent automatically via HTTP-only cookie
@@ -279,7 +276,7 @@ class AuthAPI {
       if (!this.accessToken) {
         await this.handleTokenRefresh();
       }
-      
+
       await this.getUserProfile();
       return true;
     } catch (error) {
@@ -307,25 +304,18 @@ class AuthAPI {
   }
 
   private async _performInitialization(): Promise<boolean> {
-    console.log('🔵 AuthAPI: Starting initialization...');
-    
     try {
-      console.log('🔵 AuthAPI: Attempting to refresh token from cookie...');
       const response = await this.refreshTokenFromCookie();
       this.accessToken = response.accessToken;
-      console.log('🟢 AuthAPI: Successfully refreshed token - returning true');
       return true;
     } catch (error: any) {
-      console.log('🔴 AuthAPI: Refresh failed:', error);
       // Silently handle expected cases where no refresh token exists
       if (error?.statusCode === 400 || error?.statusCode === 401) {
         // No valid refresh token available - this is expected for new/unauthenticated users
-        console.log('🔴 AuthAPI: Expected auth error (user not logged in) - returning false');
         return false;
       }
-      
+
       // Log unexpected errors
-      console.error('🔴 AuthAPI: Unexpected error during auth initialization:', error);
       return false;
     }
   }

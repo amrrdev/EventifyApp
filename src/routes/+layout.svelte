@@ -8,21 +8,17 @@
 	let { children } = $props();
 
 	onMount(async () => {
-		console.log('🟠 Layout: onMount started');
 		
 		// Log performance metrics in development
 		logPerformanceMetrics();
 
 		// Initialize authentication state from HTTP-only cookie if available
 		// This will prevent immediate redirects on page refresh
-		console.log('🟠 Layout: Starting authentication initialization...');
 		const authSuccess = await initializeAuth();
-		console.log('🟠 Layout: Authentication initialization result:', authSuccess);
 
 		// Setup automatic token refresh
 		setupAutoRefresh();
 		
-		console.log('🟠 Layout: onMount completed');
 	});
 </script>
 

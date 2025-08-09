@@ -33,7 +33,7 @@ class WebSocketService {
     // Get access token from auth API
     const { authAPI } = await import("$lib/api/auth");
     const accessToken = authAPI.getAccessToken();
-    
+
     if (!accessToken) {
       console.error("No access token available for WebSocket connection");
       return;
@@ -73,7 +73,6 @@ class WebSocketService {
 
     // Connection successful
     this.socket.on("connect", () => {
-      console.log("✅ WebSocket connected successfully");
       this.reconnectAttempts = 0;
       wsState.update((state) => ({
         ...state,
@@ -115,8 +114,6 @@ class WebSocketService {
 
     // Dashboard data updates
     this.socket.on("dashboard_data", (data: MetricsDashboard) => {
-      console.log("📊 Dashboard data received:", data);
-
       // Convert timestamp strings to Date objects for liveEvents
       if (data.liveEvents) {
         data.liveEvents = data.liveEvents.map((event) => ({
@@ -131,8 +128,6 @@ class WebSocketService {
 
     // Real-time events
     this.socket.on("events", (events: LiveEvent[] | Record<string, number>) => {
-      console.log("⚡ Live events received:", events);
-
       // Handle both array of events and event counts
       if (Array.isArray(events)) {
         // Convert timestamps and update live events
@@ -151,7 +146,6 @@ class WebSocketService {
 
     // Authentication error
     this.socket.on("unauthorized", (error) => {
-      console.error("🔐 WebSocket authentication failed:", error);
       wsState.update((state) => ({
         ...state,
         connected: false,
@@ -166,7 +160,6 @@ class WebSocketService {
 
   private handleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("❌ Max reconnection attempts reached");
       wsState.update((state) => ({
         ...state,
         error: "Connection failed after multiple attempts",
@@ -176,8 +169,6 @@ class WebSocketService {
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
-
-    console.log(`🔄 Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
     setTimeout(() => {
       if (!this.socket?.connected) {
@@ -197,7 +188,6 @@ class WebSocketService {
         setTimeout(() => this.connect(), 1000);
       } else {
         // Token refresh failed, user needs to login again
-        console.error("Token refresh failed, redirecting to login");
         window.location.href = "/sign-in";
       }
     } catch (error) {
