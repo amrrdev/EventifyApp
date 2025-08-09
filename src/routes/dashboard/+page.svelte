@@ -372,7 +372,7 @@
 					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
 						<div class="flex items-center justify-between mb-4">
 							<h3 class="text-[#e2e8f0] font-mono font-bold">
-								<span class="text-[#ed8936]">event</span>_categories
+								<span class="text-[#ed8936]">event</span>_distribution
 							</h3>
 							<span class="text-[#a0aec0] font-mono text-sm">
 								{metrics.eventDistribution.reduce((sum, item) => sum + item.value, 0)} total
@@ -546,7 +546,7 @@
 						{#if metrics.eventDistribution && metrics.eventDistribution.length > 0}
 							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
 								<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
-									<span class="text-[#ed8936]">pie</span>_chart
+									<span class="text-[#ed8936]">event</span>_pie
 								</h3>
 
 								<!-- Simple Pie Chart -->
