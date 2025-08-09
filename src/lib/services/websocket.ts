@@ -5,7 +5,7 @@ import { io, type Socket } from "socket.io-client";
 import { writable } from "svelte/store";
 import { browser } from "$app/environment";
 import { config } from "$lib/config/env";
-import type { MetricsDashboard, LiveEvent, WebSocketState } from "$lib/types/metrics";
+import type { MetricsDashboard, LiveEvent, WebSocketState, FullEvent } from "$lib/types/metrics";
 
 // WebSocket connection state store
 export const wsState = writable<WebSocketState>({
@@ -20,12 +20,16 @@ export const dashboardData = writable<MetricsDashboard | null>(null);
 
 // Live events store (for real-time event feed)
 export const liveEvents = writable<LiveEvent[]>([]);
+// Detailed events (raw events channel)
+export const fullEvents = writable<FullEvent[]>([]);
 
 class WebSocketService {
   private socket: Socket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // Start with 1 second
+  private tokenWaitAttempts = 0;
+  private maxTokenWaitAttempts = 20; // ~10s if 500ms interval
 
   async connect(): Promise<void> {
     if (!browser) return;
@@ -35,9 +39,19 @@ class WebSocketService {
     const accessToken = authAPI.getAccessToken();
 
     if (!accessToken) {
-      console.error("No access token available for WebSocket connection");
-      return;
+      // Try waiting for token (auth might still be initializing)
+      if (this.tokenWaitAttempts < this.maxTokenWaitAttempts) {
+        this.tokenWaitAttempts++;
+        wsState.update(s => ({ ...s, connecting: true, error: null }));
+        setTimeout(() => this.connect(), 500);
+        return;
+      } else {
+        wsState.update(s => ({ ...s, connecting: false, error: 'No access token (auth not initialized)' }));
+        return;
+      }
     }
+
+    this.tokenWaitAttempts = 0; // reset once we have a token
 
     // Update state to connecting
     wsState.update((state) => ({ ...state, connecting: true, error: null }));
@@ -49,12 +63,14 @@ class WebSocketService {
         .replace("https://", "wss://");
 
       this.socket = io(wsUrl, {
-        query: {
-          token: accessToken,
-        },
+        query: { token: accessToken },
         transports: ["websocket"],
         timeout: 10000,
         forceNew: true,
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 8000,
       });
 
       this.setupEventListeners();
@@ -88,8 +104,8 @@ class WebSocketService {
       console.error("❌ WebSocket connection error:", error);
       wsState.update((state) => ({
         ...state,
-        connected: false,
-        connecting: false,
+  connected: false,
+  connecting: true, // stay in connecting while retrying
         error: error.message || "Connection failed",
       }));
 
@@ -102,8 +118,8 @@ class WebSocketService {
       wsState.update((state) => ({
         ...state,
         connected: false,
-        connecting: false,
-        error: `Disconnected: ${reason}`,
+  connecting: true, // we'll be attempting reconnection
+  error: reason === 'io client disconnect' ? null : `Disconnected: ${reason}`,
       }));
 
       // Auto-reconnect unless it was intentional
@@ -116,32 +132,71 @@ class WebSocketService {
     this.socket.on("dashboard_data", (data: MetricsDashboard) => {
       // Convert timestamp strings to Date objects for liveEvents
       if (data.liveEvents) {
-        data.liveEvents = data.liveEvents.map((event) => ({
-          ...event,
-          timestamp: new Date(event.timestamp),
-        }));
+        // Preserve any existing payload we may have already attached from the raw events channel
+        let existingPayloads: Record<string, any> = {};
+        try {
+          const current = (liveEvents as any)._value as LiveEvent[] | undefined; // internal access (Svelte store)
+          if (Array.isArray(current)) {
+            for (const ev of current) {
+              if (ev.id && (ev as any).payload) {
+                existingPayloads[ev.id] = (ev as any).payload;
+              }
+            }
+          }
+        } catch {}
+
+        data.liveEvents = data.liveEvents.map((event) => {
+          const ts = new Date(event.timestamp);
+          const preservedPayload = event.id ? existingPayloads[event.id] : undefined;
+          return {
+            ...event,
+            timestamp: ts,
+            // keep previously set payload if present
+            ...(preservedPayload ? { payload: preservedPayload } : {}),
+          } as any;
+        });
       }
 
       dashboardData.set(data);
       wsState.update((state) => ({ ...state, lastUpdate: new Date() }));
     });
 
-    // Real-time events
-    this.socket.on("events", (events: LiveEvent[] | Record<string, number>) => {
-      // Handle both array of events and event counts
-      if (Array.isArray(events)) {
-        // Convert timestamps and update live events
-        const processedEvents = events.map((event) => ({
-          ...event,
-          timestamp: new Date(event.timestamp),
-        }));
-
-        liveEvents.update((currentEvents) => {
-          // Add new events and keep only the latest 50
-          const updatedEvents = [...processedEvents, ...currentEvents].slice(0, 50);
-          return updatedEvents;
-        });
-      }
+    // Raw full events channel (array of events)
+    this.socket.on("events", (incoming: any) => {
+      if (!incoming) return;
+      const arr: any[] = Array.isArray(incoming) ? incoming : [incoming];
+      const processed: FullEvent[] = arr.map(e => {
+        const ts = e.timestamp ? new Date(e.timestamp) : new Date();
+        let parsedPayload = e.payload;
+        if (parsedPayload && typeof parsedPayload === 'string') {
+          try { parsedPayload = JSON.parse(parsedPayload); } catch { /* keep original */ }
+        }
+        return {
+          ...e,
+          id: e.id || `${ts.getTime()}-${Math.random().toString(36).slice(2,8)}`,
+          timestamp: ts,
+          payload: parsedPayload
+        } as FullEvent;
+      });
+      fullEvents.update(current => [...processed, ...current].slice(0, 200));
+      // Derive lightweight live events (optional)
+      liveEvents.update(current => [
+        ...processed.map(e => ({
+          id: e.id!,
+          eventName: e.eventName,
+            // fallback fields
+          userId: e.payload?.userId || 'unknown',
+          country: e.payload?.country || e.country || 'N/A',
+          device: e.payload?.device || e.device || 'web',
+          timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+          timeAgo: '',
+          severity: e.severity as any,
+          tags: e.tags,
+          // attach raw payload so UI can show it
+          payload: e.payload
+        })),
+        ...current
+      ].slice(0,50));
     });
 
     // Authentication error
@@ -162,7 +217,8 @@ class WebSocketService {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       wsState.update((state) => ({
         ...state,
-        error: "Connection failed after multiple attempts",
+  connecting: false,
+  error: "Connection failed after multiple attempts",
       }));
       return;
     }

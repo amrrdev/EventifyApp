@@ -13,6 +13,7 @@ export interface LiveEvent {
   timeAgo: string;
   severity?: "INFO" | "WARN" | "ERROR" | "DEBUG";
   tags?: string[];
+  payload?: any; // optional detailed payload if provided
 }
 
 export interface PerformanceMetrics {
@@ -56,4 +57,18 @@ export interface WebSocketState {
   connecting: boolean;
   error: string | null;
   lastUpdate: Date | null;
+}
+
+// Full event as sent by the backend "events" websocket channel
+// Keep this intentionally loose to tolerate extra fields.
+export interface FullEvent {
+  id?: string; // may be absent; we'll generate client-side
+  eventName: string;
+  timestamp: string | Date;
+  severity?: string;
+  category?: string;
+  tags?: string[];
+  payload?: any;
+  // Allow any extra dynamic properties (_category, _severity, etc.)
+  [key: string]: any;
 }
