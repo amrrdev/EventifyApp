@@ -27,10 +27,13 @@ class WebSocketService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // Start with 1 second
 
-  connect(): void {
+  async connect(): Promise<void> {
     if (!browser) return;
 
-    const accessToken = localStorage.getItem("accessToken");
+    // Get access token from auth API
+    const { authAPI } = await import("$lib/api/auth");
+    const accessToken = authAPI.getAccessToken();
+    
     if (!accessToken) {
       console.error("No access token available for WebSocket connection");
       return;

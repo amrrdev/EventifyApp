@@ -22,13 +22,7 @@
 
 	// Check authentication
 	onMount(async () => {
-		// Initialize auth from localStorage first
-		authStore.initAuth();
-
-		// Wait a bit for the store to update
-		await new Promise(resolve => setTimeout(resolve, 100));
-
-		// Get the updated auth state
+		// Get the current auth state (should be initialized by layout)
 		authState = $authStore;
 
 		if (!authState.isAuthenticated || !authState.accessToken) {

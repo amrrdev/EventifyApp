@@ -44,21 +44,31 @@
 	});
 
 	onMount(async () => {
-		// Initialize auth from localStorage
-		authStore.initAuth();
+		console.log('🔵 Dashboard onMount - Initial auth state:', authState);
 		
-		// Check if authentication is still valid
-		const isAuthenticated = await authStore.checkAuth();
+		// Only check if user is already in auth store or try to restore from cookie if needed
+		let isAuthenticated = authState.isAuthenticated;
+		console.log('🔵 Dashboard - isAuthenticated from store:', isAuthenticated);
+		
+		if (!isAuthenticated) {
+			console.log('🔵 Dashboard - Attempting to restore session from cookie...');
+			// Try to restore session from cookie only if not already authenticated
+			isAuthenticated = await authStore.initAuth();
+			console.log('🔵 Dashboard - initAuth result:', isAuthenticated);
+		}
+		
 		isCheckingAuth = false;
 		
 		// Redirect to sign-in if not authenticated
 		if (!isAuthenticated) {
+			console.log('🔴 Dashboard - Not authenticated, redirecting to sign-in');
 			goto('/auth/sign-in');
 			return;
 		}
-
+		
+		console.log('🟢 Dashboard - Authentication successful, connecting WebSocket');
 		// Connect to WebSocket for real-time updates
-		websocketService.connect();
+		await websocketService.connect();
 	});
 
 	onDestroy(() => {

@@ -40,15 +40,14 @@
 				password
 			});
 
-			// Store tokens first so getUserProfile can use them
-			localStorage.setItem('accessToken', response.accessToken);
-			localStorage.setItem('refreshToken', response.refreshToken);
+			// Access token is now stored in memory by authAPI.signIn()
+			// Refresh token is automatically set in HTTP-only cookie by backend
 
-			// Get user profile (will use stored tokens automatically)
+			// Get user profile (will use in-memory access token)
 			const user = await authAPI.getUserProfile();
 
-			// Store authentication data
-			authStore.setAuth(user, response.accessToken, response.refreshToken);
+			// Store authentication data (no localStorage usage)
+			authStore.setAuth(user, response.accessToken);
 
 			// Redirect to dashboard
 			goto('/dashboard');

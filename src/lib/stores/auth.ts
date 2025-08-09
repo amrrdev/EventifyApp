@@ -1,5 +1,6 @@
 /**
  * Authentication store for managing user state
+ * Works with HTTP-only cookies for refresh tokens and in-memory access tokens
  */
 import { writable } from "svelte/store";
 import { browser } from "$app/environment";
@@ -14,7 +15,6 @@ export interface User {
 export interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -22,7 +22,6 @@ export interface AuthState {
 const initialState: AuthState = {
   user: null,
   accessToken: null,
-  refreshToken: null,
   isLoading: false,
   isAuthenticated: false,
 };
@@ -38,89 +37,90 @@ function createAuthStore() {
       update((state) => ({ ...state, isLoading: loading }));
     },
 
-    // Set user and tokens after successful authentication
-    setAuth: (user: User, accessToken: string, refreshToken: string) => {
+    // Set user and access token after successful authentication
+    // Note: refresh token is now in HTTP-only cookie, not stored here
+    setAuth: (user: User, accessToken: string) => {
       const authState: AuthState = {
         user,
         accessToken,
-        refreshToken,
         isLoading: false,
         isAuthenticated: true,
       };
 
       set(authState);
 
-      // Store tokens in localStorage if in browser
-      if (browser) {
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
-      }
+      // Update the authAPI's in-memory token
+      import("$lib/api/auth").then(({ authAPI }) => {
+        authAPI.setAccessToken(accessToken);
+      });
     },
 
     // Update access token (for refresh)
     updateAccessToken: (accessToken: string) => {
       update((state) => ({ ...state, accessToken }));
 
-      if (browser) {
-        localStorage.setItem("accessToken", accessToken);
-      }
+      // Update the authAPI's in-memory token
+      import("$lib/api/auth").then(({ authAPI }) => {
+        authAPI.setAccessToken(accessToken);
+      });
     },
 
     // Clear authentication state
     clearAuth: () => {
       set(initialState);
 
-      if (browser) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-      }
+      // Clear the authAPI's in-memory token
+      import("$lib/api/auth").then(({ authAPI }) => {
+        authAPI.setAccessToken(null);
+      });
     },
 
-    // Initialize auth state from localStorage
-    initAuth: () => {
-      if (!browser) return;
+    // Initialize auth state by trying to refresh from HTTP-only cookie
+    // Only call this when you actually need to check if user has valid session
+    initAuth: async () => {
+      if (!browser) return false;
 
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-      const userStr = localStorage.getItem("user");
+      update((state) => ({ ...state, isLoading: true }));
 
-      if (accessToken && refreshToken && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          set({
-            user,
-            accessToken,
-            refreshToken,
-            isLoading: false,
-            isAuthenticated: true,
-          });
-        } catch (error) {
-          console.error("Failed to parse stored user data:", error);
+      try {
+        // Import authAPI and try to initialize
+        const { authAPI } = await import("$lib/api/auth");
+        const success = await authAPI.initialize();
+
+        if (success) {
+          // Get user profile to set user data
+          const user = await authAPI.getUserProfile();
+          const accessToken = authAPI.getAccessToken();
+
+          if (accessToken) {
+            set({
+              user,
+              accessToken,
+              isLoading: false,
+              isAuthenticated: true,
+            });
+            return true;
+          }
         }
+
+        // Failed to initialize
+        set(initialState);
+        return false;
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+        set(initialState);
+        return false;
       }
     },
 
     // Update user data
     updateUser: (user: User) => {
       update((state) => ({ ...state, user }));
-
-      if (browser) {
-        localStorage.setItem("user", JSON.stringify(user));
-      }
     },
 
     // Check and refresh authentication status
     checkAuth: async () => {
       if (!browser) return false;
-
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-
-      if (!accessToken || !refreshToken) {
-        return false;
-      }
 
       try {
         // Import authAPI to check status
@@ -130,18 +130,23 @@ function createAuthStore() {
         if (!isValid) {
           // Clear invalid auth
           set(initialState);
-          if (browser) {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            localStorage.removeItem("user");
-          }
         }
 
         return isValid;
       } catch (error) {
         console.error("Auth check failed:", error);
+        set(initialState);
         return false;
       }
+    },
+
+    // Get current auth state
+    getCurrentState: (): AuthState => {
+      let currentState = initialState;
+      subscribe((state) => {
+        currentState = state;
+      })();
+      return currentState;
     },
   };
 }

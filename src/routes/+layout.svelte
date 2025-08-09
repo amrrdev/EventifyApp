@@ -3,16 +3,19 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { logPerformanceMetrics } from '$lib/utils/performance';
-	import { authStore } from '$lib/stores/auth';
+	import { initializeAuth, setupAutoRefresh } from '$lib/utils/auth';
 
 	let { children } = $props();
 
-	onMount(() => {
+	onMount(async () => {
 		// Log performance metrics in development
 		logPerformanceMetrics();
 
-		// Initialize auth store from localStorage
-		authStore.initAuth();
+		// No automatic token refresh on startup
+		// Tokens will only be refreshed when needed (when API calls return 401)
+
+		// Setup automatic token refresh
+		setupAutoRefresh();
 	});
 </script>
 
