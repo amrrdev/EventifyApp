@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/auth';
+	import { authAPI } from '$lib/api/auth';
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	let authState = $state($authStore);
+	let isCheckingAuth = $state(true);
 
 	// Subscribe to auth store changes
 	$effect(() => {
@@ -14,15 +16,32 @@
 		return unsubscribe;
 	});
 
-	onMount(() => {
+	onMount(async () => {
 		// Initialize auth from localStorage
 		authStore.initAuth();
-		
+
+		// Check if authentication is still valid (this will auto-refresh if needed)
+		const isAuthenticated = await authStore.checkAuth();
+		isCheckingAuth = false;
+
 		// Redirect to sign-in if not authenticated
-		if (!authState.isAuthenticated) {
+		if (!isAuthenticated) {
 			goto('/auth/sign-in');
 		}
 	});
+
+	// Example function to test authenticated API calls
+	async function testAuthenticatedCall() {
+		try {
+			// This will automatically refresh the token if expired
+			const userProfile = await authAPI.getUserProfile();
+			console.log('User profile:', userProfile);
+			alert('Authenticated API call successful! Check console for details.');
+		} catch (error) {
+			console.error('Authenticated API call failed:', error);
+			alert('API call failed. You may have been logged out.');
+		}
+	}
 
 	function handleSignOut() {
 		authStore.clearAuth();
@@ -106,10 +125,10 @@
 				</div>
 
 				<div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-					<div class="text-3xl mb-4">📞</div>
-					<h3 class="text-xl font-semibold mb-2">Support</h3>
-					<p class="text-gray-600 mb-4">Get help when you need it</p>
-					<Button variant="primary" size="sm">Contact Support</Button>
+					<div class="text-3xl mb-4">🔧</div>
+					<h3 class="text-xl font-semibold mb-2">Test API</h3>
+					<p class="text-gray-600 mb-4">Test authenticated API calls</p>
+					<Button variant="primary" size="sm" onclick={testAuthenticatedCall}>Test Auth</Button>
 				</div>
 			</div>
 

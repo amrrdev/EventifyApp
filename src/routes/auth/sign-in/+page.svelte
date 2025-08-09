@@ -40,8 +40,12 @@
 				password
 			});
 
-			// Get user profile
-			const user = await authAPI.getUserProfile(response.accessToken);
+			// Store tokens first so getUserProfile can use them
+			localStorage.setItem('accessToken', response.accessToken);
+			localStorage.setItem('refreshToken', response.refreshToken);
+
+			// Get user profile (will use stored tokens automatically)
+			const user = await authAPI.getUserProfile();
 
 			// Store authentication data
 			authStore.setAuth(user, response.accessToken, response.refreshToken);
