@@ -320,13 +320,15 @@
 							<div class="text-[#a0aec0]">// Initialize Eventify</div>
 							<div><span class="text-[#f7fafc]">import</span> <span class="text-[#68d391]">&#123; Eventify &#125;</span> <span class="text-[#f7fafc]">from</span> <span class="text-[#ed8936]">'@eventify/sdk'</span><span class="text-[#f7fafc]">;</span></div>
 							<br />
-							<div><span class="text-[#f7fafc]">const</span> <span class="text-[#63b3ed]">eventify</span> <span class="text-[#f7fafc]">=</span> <span class="text-[#f7fafc]">new</span> <span class="text-[#68d391]">Eventify</span><span class="text-[#f7fafc]">(</span><span class="text-[#ed8936]">'your-api-key'</span><span class="text-[#f7fafc]">);</span></div>
+							<div><span class="text-[#f7fafc]">await</span> <span class="text-[#63b3ed]">eventify</span><span class="text-[#f7fafc]">.</span><span class="text-[#68d391]">init</span><span class="text-[#f7fafc]">(</span><span class="text-[#ed8936]">'your-api-key'</span><span class="text-[#f7fafc]">)</span></div>
 							<br />
-							<div class="text-[#a0aec0]">// Track events in real-time</div>
-							<div><span class="text-[#63b3ed]">eventify</span><span class="text-[#f7fafc]">.</span><span class="text-[#68d391]">track</span><span class="text-[#f7fafc]">(</span><span class="text-[#ed8936]">'user.signup'</span><span class="text-[#f7fafc]">, &#123;</span></div>
-							<div class="ml-4"><span class="text-[#63b3ed]">userId</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'user_123'</span><span class="text-[#f7fafc]">,</span></div>
-							<div class="ml-4"><span class="text-[#63b3ed]">plan</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'pro'</span><span class="text-[#f7fafc]">,</span></div>
-							<div class="ml-4"><span class="text-[#63b3ed]">source</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'organic'</span></div>
+							<div><span class="text-[#63b3ed]">eventify</span><span class="text-[#f7fafc]">.</span><span class="text-[#68d391]">event</span><span class="text-[#f7fafc]">(&#123;</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">eventName</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'user_action'</span><span class="text-[#f7fafc]">,</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">payload</span><span class="text-[#f7fafc]">:</span> <span class="text-[#f7fafc]">&#123;</span> <span class="text-[#63b3ed]">action</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'click'</span> <span class="text-[#f7fafc]">&#125;,</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">category</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'user'</span><span class="text-[#f7fafc]">,</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">severity</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'INFO'</span><span class="text-[#f7fafc]">,</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">tags</span><span class="text-[#f7fafc]">:</span> <span class="text-[#f7fafc]">[</span><span class="text-[#ed8936]">'ui'</span><span class="text-[#f7fafc]">,</span> <span class="text-[#ed8936]">'interaction'</span><span class="text-[#f7fafc]">],</span></div>
+							<div class="ml-4"><span class="text-[#63b3ed]">timestamp</span><span class="text-[#f7fafc]">:</span> <span class="text-[#ed8936]">'2025-01-01T00:00:00Z'</span></div>
 							<div><span class="text-[#f7fafc]">&#125;);</span></div>
 						</div>
 					</div>
