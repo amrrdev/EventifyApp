@@ -205,31 +205,34 @@
 {:else if authState.isAuthenticated && authState.user}
 	<div class="min-h-screen bg-[#1a1d23]">
 		<!-- Header -->
-		<header class="bg-[#2d3748] border-b border-[#4a5568] shadow-lg">
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div class="flex justify-between items-center h-16">
-					<div class="flex items-center space-x-4">
-						<div class="w-8 h-8 bg-[#1a202c] border border-[#4a5568] flex items-center justify-center font-mono text-sm text-[#a0aec0]">
-							⚡
-						</div>
-						<div class="font-mono text-[#e2e8f0]">
-							<span class="text-[#ed8936]">event</span>:<span class="text-[#68d391]">dashboard</span>
+		<header class="bg-gradient-to-r from-[#1a202c] to-[#2d3748] border-b border-[#4a5568] shadow-xl">
+			<div class="max-w-7xl mx-auto px-6">
+				<div class="flex items-center justify-between h-18 py-2">
+					<!-- Left Section: Brand & Status -->
+					<div class="flex items-center space-x-6">
+						<div class="flex items-center space-x-3">
+							<div class="w-10 h-10 bg-gradient-to-br from-[#ed8936] to-[#f6ad55] flex items-center justify-center rounded-lg shadow-lg">
+								<span class="text-lg">⚡</span>
+							</div>
+							<div class="font-mono text-lg font-semibold">
+								<span class="text-[#ed8936]">event</span><span class="text-[#4a5568]">:</span><span class="text-[#68d391]">dashboard</span>
+							</div>
 						</div>
 						
 						<!-- Connection Status -->
-						<div class="flex items-center space-x-2 ml-8">
+						<div class="flex items-center space-x-3 px-3 py-1.5 bg-[#374151] rounded-full">
 							{#if wsConnectionState.connected}
-								<div class="w-2 h-2 bg-[#68d391] rounded-full animate-pulse"></div>
-								<span class="text-[#68d391] font-mono text-sm">LIVE</span>
+								<div class="w-2.5 h-2.5 bg-[#68d391] rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
+								<span class="text-[#68d391] font-mono text-sm font-medium">LIVE</span>
 							{:else if wsConnectionState.connecting}
-								<div class="w-2 h-2 bg-[#ed8936] rounded-full animate-pulse"></div>
-								<span class="text-[#ed8936] font-mono text-sm">CONNECTING</span>
+								<div class="w-2.5 h-2.5 bg-[#ed8936] rounded-full animate-pulse shadow-lg shadow-orange-500/50"></div>
+								<span class="text-[#ed8936] font-mono text-sm font-medium">CONNECTING</span>
 							{:else}
-								<div class="w-2 h-2 bg-[#f56565] rounded-full"></div>
-								<span class="text-[#f56565] font-mono text-sm">OFFLINE</span>
+								<div class="w-2.5 h-2.5 bg-[#f56565] rounded-full shadow-lg shadow-red-500/50"></div>
+								<span class="text-[#f56565] font-mono text-sm font-medium">OFFLINE</span>
 								<button 
 									onclick={handleReconnect}
-									class="ml-2 px-2 py-1 bg-[#2d3748] border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded hover:bg-[#63b3ed] hover:text-[#1a202c] transition-colors"
+									class="ml-2 px-2 py-1 bg-[#1a202c] border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded-md hover:bg-[#63b3ed] hover:text-[#1a202c] transition-all duration-200"
 								>
 									reconnect()
 								</button>
@@ -237,27 +240,38 @@
 						</div>
 					</div>
 					
-					<div class="flex items-center space-x-4">
-						<span class="text-[#a0aec0] font-mono text-sm">
-							<span class="text-[#63b3ed]">user</span>: {authState.user.name}
-						</span>
+					<!-- Center Navigation -->
+					<div class="flex items-center space-x-2 bg-[#374151]/50 rounded-xl p-1">
 						<a
 							href="/api-keys"
-							class="px-3 py-1 bg-[#2d3748] border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded hover:bg-[#63b3ed] hover:text-[#1a202c] transition-colors"
+							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#63b3ed]/30 text-[#63b3ed] font-mono text-sm rounded-lg hover:bg-[#63b3ed] hover:text-[#1a202c] hover:border-[#63b3ed] transition-all duration-200 shadow-lg"
 						>
-							🔑 api_keys
+							🔑 <span>api_keys</span>
+						</a>
+						<a
+							href="/events"
+							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#a78bfa]/30 text-[#a78bfa] font-mono text-sm rounded-lg hover:bg-[#a78bfa] hover:text-[#1a202c] hover:border-[#a78bfa] transition-all duration-200 shadow-lg"
+						>
+							� <span>events</span>
 						</a>
 						<button
 							onclick={toggleDemoMode}
-							class="px-3 py-1 bg-[#2d3748] border border-{demoMode ? '[#68d391]' : '[#ed8936]'} text-{demoMode ? '[#68d391]' : '[#ed8936]'} font-mono text-xs rounded hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:text-[#1a202c] transition-colors"
+							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-{demoMode ? '[#68d391]/30' : '[#ed8936]/30'} text-{demoMode ? '[#68d391]' : '[#ed8936]'} font-mono text-sm rounded-lg hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:text-[#1a202c] hover:border-{demoMode ? '[#68d391]' : '[#ed8936]'} transition-all duration-200 shadow-lg"
 						>
-							{demoMode ? 'demo: ON' : 'demo: OFF'}
+							{demoMode ? '✨ demo: ON' : '⭕ demo: OFF'}
 						</button>
+					</div>
+					
+					<!-- Right Section: User & Actions -->
+					<div class="flex items-center space-x-4">
+						<div class="text-[#e2e8f0] font-mono text-sm font-medium px-3 py-1.5 bg-[#374151] rounded-full">
+							{authState.user.name}
+						</div>
 						<button
 							onclick={handleSignOut}
-							class="px-4 py-2 bg-[#2d3748] border border-[#f56565] text-[#f56565] font-mono text-sm rounded hover:bg-[#f56565] hover:text-[#1a202c] transition-colors"
+							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#f56565]/30 text-[#f56565] font-mono text-sm rounded-lg hover:bg-[#f56565] hover:text-[#1a202c] hover:border-[#f56565] transition-all duration-200 shadow-lg"
 						>
-							logout()
+							🚪 <span>logout()</span>
 						</button>
 					</div>
 				</div>
