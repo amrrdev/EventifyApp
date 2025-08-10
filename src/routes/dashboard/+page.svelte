@@ -254,6 +254,12 @@
 						>
 							⚡ <span>events</span>
 						</a>
+						<a
+							href="/sdk"
+							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#68d391]/30 text-[#68d391] font-mono text-sm rounded-lg hover:bg-[#68d391] hover:text-[#1a202c] hover:border-[#68d391] transition-all duration-200 shadow-lg"
+						>
+							📦 <span>sdk</span>
+						</a>
 						<button
 							onclick={toggleDemoMode}
 							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-{demoMode ? '[#68d391]/30' : '[#ed8936]/30'} text-{demoMode ? '[#68d391]' : '[#ed8936]'} font-mono text-sm rounded-lg hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:text-[#1a202c] hover:border-{demoMode ? '[#68d391]' : '[#ed8936]'} transition-all duration-200 shadow-lg"

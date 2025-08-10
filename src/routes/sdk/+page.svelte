@@ -20,6 +20,127 @@
 			console.error('Failed to copy:', err);
 		}
 	}
+
+	// Pre-styled code snippets with manual highlighting
+	const codeSnippets = {
+		quickstart: `<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">eventify</span> = <span class="text-[#f6ad55]">require</span>(<span class="text-[#68d391]">'@eventify/sdk'</span>);
+
+<span class="text-[#718096]">// Initialize</span>
+<span class="text-[#63b3ed]">await</span> <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">init</span>(<span class="text-[#68d391]">'your-api-key'</span>);
+
+<span class="text-[#718096]">// Send events</span>
+<span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({
+  <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'user_signup'</span>,
+  <span class="text-[#e2e8f0]">payload</span>: { <span class="text-[#e2e8f0]">userId</span>: <span class="text-[#68d391]">'123'</span> }
+});`,
+		
+		init: `<span class="text-[#63b3ed]">await</span> <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">init</span>(<span class="text-[#68d391]">'your-api-key'</span>, {
+  <span class="text-[#e2e8f0]">host</span>: <span class="text-[#68d391]">'grpc.eventify.com'</span>,
+  <span class="text-[#e2e8f0]">port</span>: <span class="text-[#ed8936]">443</span>,
+  <span class="text-[#e2e8f0]">useTls</span>: <span class="text-[#63b3ed]">true</span>,
+  <span class="text-[#e2e8f0]">maxRetries</span>: <span class="text-[#ed8936]">3</span>,
+  <span class="text-[#e2e8f0]">timeout</span>: <span class="text-[#ed8936]">5000</span>
+});`,
+
+		event: `<span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({
+  <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'user_action'</span>,
+  <span class="text-[#e2e8f0]">payload</span>: { <span class="text-[#e2e8f0]">action</span>: <span class="text-[#68d391]">'click'</span> },
+  <span class="text-[#e2e8f0]">category</span>: <span class="text-[#68d391]">'user'</span>,
+  <span class="text-[#e2e8f0]">severity</span>: <span class="text-[#68d391]">'INFO'</span>,
+  <span class="text-[#e2e8f0]">tags</span>: [<span class="text-[#68d391]">'ui'</span>, <span class="text-[#68d391]">'interaction'</span>],
+  <span class="text-[#e2e8f0]">timestamp</span>: <span class="text-[#68d391]">'2025-01-01T00:00:00Z'</span>
+});`,
+
+		express: `<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">express</span> = <span class="text-[#f6ad55]">require</span>(<span class="text-[#68d391]">'express'</span>);
+<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">eventify</span> = <span class="text-[#f6ad55]">require</span>(<span class="text-[#68d391]">'@eventify/sdk'</span>);
+
+<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">app</span> = <span class="text-[#f6ad55]">express</span>();
+<span class="text-[#e2e8f0]">app</span>.<span class="text-[#a78bfa]">use</span>(<span class="text-[#e2e8f0]">express</span>.<span class="text-[#a78bfa]">json</span>());
+
+<span class="text-[#63b3ed]">async</span> <span class="text-[#63b3ed]">function</span> <span class="text-[#f6ad55]">startServer</span>() {
+  <span class="text-[#718096]">// Initialize SDK before starting server</span>
+  <span class="text-[#63b3ed]">await</span> <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">init</span>(<span class="text-[#e2e8f0]">process</span>.<span class="text-[#a78bfa]">env</span>.<span class="text-[#e2e8f0]">EVENTIFY_API_KEY</span>);
+  <span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">log</span>(<span class="text-[#68d391]">'✅ Eventify SDK initialized'</span>);
+  
+  <span class="text-[#e2e8f0]">app</span>.<span class="text-[#a78bfa]">post</span>(<span class="text-[#68d391]">'/api/users'</span>, (<span class="text-[#e2e8f0]">req</span>, <span class="text-[#e2e8f0]">res</span>) => {
+    <span class="text-[#718096]">// Track user creation</span>
+    <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({
+      <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'user_created'</span>,
+      <span class="text-[#e2e8f0]">payload</span>: { 
+        <span class="text-[#e2e8f0]">userId</span>: <span class="text-[#e2e8f0]">req</span>.<span class="text-[#a78bfa]">body</span>.<span class="text-[#e2e8f0]">id</span>,
+        <span class="text-[#e2e8f0]">email</span>: <span class="text-[#e2e8f0]">req</span>.<span class="text-[#a78bfa]">body</span>.<span class="text-[#e2e8f0]">email</span>,
+        <span class="text-[#e2e8f0]">plan</span>: <span class="text-[#e2e8f0]">req</span>.<span class="text-[#a78bfa]">body</span>.<span class="text-[#e2e8f0]">plan</span> 
+      },
+      <span class="text-[#e2e8f0]">category</span>: <span class="text-[#68d391]">'user'</span>,
+      <span class="text-[#e2e8f0]">severity</span>: <span class="text-[#68d391]">'INFO'</span>,
+      <span class="text-[#e2e8f0]">tags</span>: [<span class="text-[#68d391]">'registration'</span>, <span class="text-[#68d391]">'api'</span>]
+    });
+    
+    <span class="text-[#e2e8f0]">res</span>.<span class="text-[#a78bfa]">json</span>({ <span class="text-[#e2e8f0]">success</span>: <span class="text-[#63b3ed]">true</span> });
+  });
+  
+  <span class="text-[#e2e8f0]">app</span>.<span class="text-[#a78bfa]">listen</span>(<span class="text-[#ed8936]">3000</span>, () => {
+    <span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">log</span>(<span class="text-[#68d391]">'🚀 Server running on port 3000'</span>);
+  });
+}
+
+<span class="text-[#f6ad55]">startServer</span>().<span class="text-[#a78bfa]">catch</span>(<span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">error</span>);`,
+
+		lambda: `<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">eventify</span> = <span class="text-[#f6ad55]">require</span>(<span class="text-[#68d391]">'@eventify/sdk'</span>);
+
+<span class="text-[#63b3ed]">let</span> <span class="text-[#e2e8f0]">initialized</span> = <span class="text-[#63b3ed]">false</span>;
+
+<span class="text-[#e2e8f0]">exports</span>.<span class="text-[#a78bfa]">handler</span> = <span class="text-[#63b3ed]">async</span> (<span class="text-[#e2e8f0]">event</span>, <span class="text-[#e2e8f0]">context</span>) => {
+  <span class="text-[#63b3ed]">try</span> {
+    <span class="text-[#718096]">// Initialize once per container</span>
+    <span class="text-[#63b3ed]">if</span> (!<span class="text-[#e2e8f0]">initialized</span>) {
+      <span class="text-[#63b3ed]">await</span> <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">init</span>(<span class="text-[#e2e8f0]">process</span>.<span class="text-[#a78bfa]">env</span>.<span class="text-[#e2e8f0]">EVENTIFY_API_KEY</span>);
+      <span class="text-[#e2e8f0]">initialized</span> = <span class="text-[#63b3ed]">true</span>;
+      <span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">log</span>(<span class="text-[#68d391]">'✅ Eventify SDK initialized'</span>);
+    }
+    
+    <span class="text-[#718096]">// Track function invocation</span>
+    <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({
+      <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'lambda_invocation'</span>,
+      <span class="text-[#e2e8f0]">payload</span>: { 
+        <span class="text-[#e2e8f0]">functionName</span>: <span class="text-[#e2e8f0]">context</span>.<span class="text-[#a78bfa]">functionName</span>,
+        <span class="text-[#e2e8f0]">requestId</span>: <span class="text-[#e2e8f0]">context</span>.<span class="text-[#a78bfa]">awsRequestId</span>
+      },
+      <span class="text-[#e2e8f0]">category</span>: <span class="text-[#68d391]">'serverless'</span>
+    });
+    
+    <span class="text-[#63b3ed]">return</span> { <span class="text-[#e2e8f0]">statusCode</span>: <span class="text-[#ed8936]">200</span>, <span class="text-[#e2e8f0]">body</span>: <span class="text-[#68d391]">'OK'</span> };
+  } <span class="text-[#63b3ed]">catch</span> (<span class="text-[#e2e8f0]">error</span>) {
+    <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({
+      <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'lambda_error'</span>,
+      <span class="text-[#e2e8f0]">payload</span>: { <span class="text-[#e2e8f0]">error</span>: <span class="text-[#e2e8f0]">error</span>.<span class="text-[#a78bfa]">message</span> },
+      <span class="text-[#e2e8f0]">severity</span>: <span class="text-[#68d391]">'ERROR'</span>
+    });
+    <span class="text-[#63b3ed]">throw</span> <span class="text-[#e2e8f0]">error</span>;
+  }
+};`,
+
+		errorHandling: `<span class="text-[#63b3ed]">try</span> {
+  <span class="text-[#63b3ed]">await</span> <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">init</span>(<span class="text-[#e2e8f0]">process</span>.<span class="text-[#a78bfa]">env</span>.<span class="text-[#e2e8f0]">EVENTIFY_API_KEY</span>);
+} <span class="text-[#63b3ed]">catch</span> (<span class="text-[#e2e8f0]">error</span>) {
+  <span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">error</span>(<span class="text-[#68d391]">'Failed to initialize:'</span>, <span class="text-[#e2e8f0]">error</span>.<span class="text-[#a78bfa]">message</span>);
+  
+  <span class="text-[#63b3ed]">if</span> (<span class="text-[#e2e8f0]">error</span>.<span class="text-[#a78bfa]">code</span> === <span class="text-[#68d391]">'INVALID_API_KEY'</span>) {
+    <span class="text-[#e2e8f0]">process</span>.<span class="text-[#a78bfa]">exit</span>(<span class="text-[#ed8936]">1</span>);
+  }
+}
+
+<span class="text-[#718096]">// Event validation</span>
+<span class="text-[#63b3ed]">try</span> {
+  <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">event</span>({ <span class="text-[#e2e8f0]">eventName</span>: <span class="text-[#68d391]">'test'</span> });
+} <span class="text-[#63b3ed]">catch</span> (<span class="text-[#e2e8f0]">error</span>) {
+  <span class="text-[#e2e8f0]">console</span>.<span class="text-[#a78bfa]">warn</span>(<span class="text-[#68d391]">'Invalid event:'</span>, <span class="text-[#e2e8f0]">error</span>.<span class="text-[#a78bfa]">message</span>);
+}`,
+
+		statusOnline: `<span class="text-[#63b3ed]">if</span> (<span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">isOnline</span>()) { <span class="text-[#718096]">/* your code */</span> }`,
+		
+		statusQueue: `<span class="text-[#63b3ed]">const</span> <span class="text-[#e2e8f0]">pending</span> = <span class="text-[#e2e8f0]">eventify</span>.<span class="text-[#a78bfa]">getQueueSize</span>();`
+	};
 </script>
 
 <svelte:head>
@@ -100,16 +221,7 @@
 						<span class="text-2xl mr-2">⚡</span> Quick Start
 					</h2>
 					<div class="relative">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`const eventify = require('@eventify/sdk');
-
-// Initialize
-await eventify.init('your-api-key');
-
-// Send events
-eventify.event({
-  eventName: 'user_signup',
-  payload: { userId: '123' }
-});`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.quickstart}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const eventify = require('@eventify/sdk');\n\n// Initialize\nawait eventify.init('your-api-key');\n\n// Send events\neventify.event({\n  eventName: 'user_signup',\n  payload: { userId: '123' }\n});`, 'quickstart')}
@@ -150,13 +262,7 @@ eventify.event({
 					<p class="text-[#a0aec0] font-mono mb-4">Initialize the SDK with your API key. Must be awaited before sending events.</p>
 					
 					<div class="relative mb-4">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`await eventify.init('your-api-key', {
-  host: 'grpc.eventify.com',  // default
-  port: 443,                  // default
-  useTls: true,              // default
-  maxRetries: 3,             // default
-  timeout: 5000              // default (ms)
-});`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.init}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`await eventify.init('your-api-key', {\n  host: 'grpc.eventify.com',\n  port: 443,\n  useTls: true,\n  maxRetries: 3,\n  timeout: 5000\n});`, 'init')}
@@ -183,14 +289,7 @@ eventify.event({
 					<p class="text-[#a0aec0] font-mono mb-4">Send an event. Returns immediately (fire-and-forget pattern).</p>
 					
 					<div class="relative mb-4">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`eventify.event({
-  eventName: 'user_action',           // required
-  payload: { action: 'click' },       // required
-  category: 'user',                   // optional
-  severity: 'INFO',                   // optional: INFO|WARN|ERROR
-  tags: ['ui', 'interaction'],        // optional
-  timestamp: '2025-01-01T00:00:00Z'   // optional (auto-generated)
-});`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.event}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`eventify.event({\n  eventName: 'user_action',\n  payload: { action: 'click' },\n  category: 'user',\n  severity: 'INFO',\n  tags: ['ui', 'interaction'],\n  timestamp: '2025-01-01T00:00:00Z'\n});`, 'event')}
@@ -232,12 +331,12 @@ eventify.event({
 						<div class="bg-[#1a202c] rounded-lg p-4">
 							<h4 class="font-mono font-bold text-[#63b3ed] mb-2">eventify.isOnline()</h4>
 							<p class="text-[#a0aec0] font-mono text-sm mb-2">Returns boolean indicating connection status</p>
-							<pre class="text-[#68d391] font-mono text-xs"><code>if (eventify.isOnline()) {'{ /* your code */ }'}</code></pre>
+							<pre class="font-mono text-xs"><code>{@html codeSnippets.statusOnline}</code></pre>
 						</div>
 						<div class="bg-[#1a202c] rounded-lg p-4">
 							<h4 class="font-mono font-bold text-[#63b3ed] mb-2">eventify.getQueueSize()</h4>
 							<p class="text-[#a0aec0] font-mono text-sm mb-2">Returns number of queued events</p>
-							<pre class="text-[#68d391] font-mono text-xs"><code>const pending = eventify.getQueueSize();</code></pre>
+							<pre class="font-mono text-xs"><code>{@html codeSnippets.statusQueue}</code></pre>
 						</div>
 					</div>
 				</div>
@@ -254,50 +353,7 @@ eventify.event({
 					<p class="text-[#a0aec0] font-mono mb-4">Integration with Express.js web server</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`const express = require('express');
-const eventify = require('@eventify/sdk');
-
-const app = express();
-app.use(express.json());
-
-async function startServer() {
-  // Initialize SDK before starting server
-  await eventify.init(process.env.EVENTIFY_API_KEY);
-  console.log('✅ Eventify SDK initialized');
-  
-  app.post('/api/users', (req, res) => {
-    // Track user creation
-    eventify.event({
-      eventName: 'user_created',
-      payload: { 
-        userId: req.body.id,
-        email: req.body.email,
-        plan: req.body.plan 
-      },
-      category: 'user',
-      severity: 'INFO',
-      tags: ['registration', 'api']
-    });
-    
-    res.json({ success: true });
-  });
-  
-  app.get('/api/health', (req, res) => {
-    res.json({ 
-      status: 'ok',
-      eventify: {
-        online: eventify.isOnline(),
-        queueSize: eventify.getQueueSize()
-      }
-    });
-  });
-  
-  app.listen(3000, () => {
-    console.log('🚀 Server running on port 3000');
-  });
-}
-
-startServer().catch(console.error);`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.express}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const express = require('express');\nconst eventify = require('@eventify/sdk');\n\nconst app = express();\napp.use(express.json());\n\nasync function startServer() {\n  await eventify.init(process.env.EVENTIFY_API_KEY);\n  console.log('✅ Eventify SDK initialized');\n  \n  app.post('/api/users', (req, res) => {\n    eventify.event({\n      eventName: 'user_created',\n      payload: { \n        userId: req.body.id,\n        email: req.body.email,\n        plan: req.body.plan \n      },\n      category: 'user',\n      severity: 'INFO',\n      tags: ['registration', 'api']\n    });\n    \n    res.json({ success: true });\n  });\n  \n  app.listen(3000);\n}\n\nstartServer().catch(console.error);`, 'express')}
@@ -316,64 +372,7 @@ startServer().catch(console.error);`}</code></pre>
 					<p class="text-[#a0aec0] font-mono mb-4">Serverless function with container reuse optimization</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`const eventify = require('@eventify/sdk');
-
-let initialized = false;
-
-exports.handler = async (event, context) => {
-  try {
-    // Initialize once per container
-    if (!initialized) {
-      await eventify.init(process.env.EVENTIFY_API_KEY);
-      initialized = true;
-      console.log('✅ Eventify SDK initialized');
-    }
-    
-    // Track function invocation
-    eventify.event({
-      eventName: 'lambda_invocation',
-      payload: { 
-        functionName: context.functionName,
-        requestId: context.awsRequestId,
-        eventSource: event.source || 'unknown'
-      },
-      category: 'serverless',
-      severity: 'INFO',
-      tags: ['lambda', 'aws']
-    });
-    
-    // Your business logic here
-    const result = processEvent(event);
-    
-    // Track success
-    eventify.event({
-      eventName: 'lambda_success',
-      payload: { result },
-      category: 'serverless',
-      tags: ['lambda', 'success']
-    });
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify(result)
-    };
-    
-  } catch (error) {
-    // Track errors
-    eventify.event({
-      eventName: 'lambda_error',
-      payload: { 
-        error: error.message,
-        stack: error.stack
-      },
-      category: 'serverless',
-      severity: 'ERROR',
-      tags: ['lambda', 'error']
-    });
-    
-    throw error;
-  }
-};`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.lambda}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const eventify = require('@eventify/sdk');\n\nlet initialized = false;\n\nexports.handler = async (event, context) => {\n  try {\n    if (!initialized) {\n      await eventify.init(process.env.EVENTIFY_API_KEY);\n      initialized = true;\n    }\n    \n    eventify.event({\n      eventName: 'lambda_invocation',\n      payload: { \n        functionName: context.functionName,\n        requestId: context.awsRequestId\n      },\n      category: 'serverless'\n    });\n    \n    return { statusCode: 200, body: 'OK' };\n  } catch (error) {\n    eventify.event({\n      eventName: 'lambda_error',\n      payload: { error: error.message },\n      severity: 'ERROR'\n    });\n    throw error;\n  }\n};`, 'lambda')}
@@ -392,61 +391,7 @@ exports.handler = async (event, context) => {
 					<p class="text-[#a0aec0] font-mono mb-4">Proper error handling and recovery patterns</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] text-[#e2e8f0] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{`const eventify = require('@eventify/sdk');
-
-async function initializeEventify() {
-  try {
-    await eventify.init(process.env.EVENTIFY_API_KEY);
-    console.log('✅ Eventify connected successfully');
-    
-    // Test connection
-    eventify.event({
-      eventName: 'sdk_initialized',
-      payload: { timestamp: new Date().toISOString() },
-      category: 'system'
-    });
-    
-  } catch (error) {
-    console.error('❌ Failed to initialize Eventify:', error.message);
-    
-    if (error.code === 'INVALID_API_KEY') {
-      console.error('Please check your API key');
-      process.exit(1);
-    }
-    
-    if (error.code === 'CONNECTION_FAILED') {
-      console.error('Network connectivity issues');
-      // Implement retry logic or fallback
-    }
-    
-    throw error;
-  }
-}
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🔄 Shutting down gracefully...');
-  
-  // SDK automatically flushes pending events
-  setTimeout(() => {
-    process.exit(0);
-  }, 1000);
-});
-
-// Handle validation errors
-function trackUserAction(userId, action) {
-  try {
-    eventify.event({
-      eventName: 'user_action',
-      payload: { userId, action }
-    });
-  } catch (error) {
-    if (error.code === 'VALIDATION_ERROR') {
-      console.warn('Invalid event data:', error.details);
-    }
-    // Don't throw - continue with app logic
-  }
-}`}</code></pre>
+						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.errorHandling}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`try {\n  await eventify.init(process.env.EVENTIFY_API_KEY);\n} catch (error) {\n  console.error('Failed to initialize:', error.message);\n  \n  if (error.code === 'INVALID_API_KEY') {\n    process.exit(1);\n  }\n}\n\n// Event validation\ntry {\n  eventify.event({ eventName: 'test' });\n} catch (error) {\n  console.warn('Invalid event:', error.message);\n}`, 'error')}
