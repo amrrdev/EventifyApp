@@ -252,7 +252,7 @@
 							href="/events"
 							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#a78bfa]/30 text-[#a78bfa] font-mono text-sm rounded-lg hover:bg-[#a78bfa] hover:text-[#1a202c] hover:border-[#a78bfa] transition-all duration-200 shadow-lg"
 						>
-							� <span>events</span>
+							⚡ <span>events</span>
 						</a>
 						<button
 							onclick={toggleDemoMode}
