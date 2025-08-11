@@ -42,11 +42,15 @@ class WebSocketService {
       // Try waiting for token (auth might still be initializing)
       if (this.tokenWaitAttempts < this.maxTokenWaitAttempts) {
         this.tokenWaitAttempts++;
-        wsState.update(s => ({ ...s, connecting: true, error: null }));
+        wsState.update((s) => ({ ...s, connecting: true, error: null }));
         setTimeout(() => this.connect(), 500);
         return;
       } else {
-        wsState.update(s => ({ ...s, connecting: false, error: 'No access token (auth not initialized)' }));
+        wsState.update((s) => ({
+          ...s,
+          connecting: false,
+          error: "No access token (auth not initialized)",
+        }));
         return;
       }
     }
@@ -104,8 +108,8 @@ class WebSocketService {
       console.error("❌ WebSocket connection error:", error);
       wsState.update((state) => ({
         ...state,
-  connected: false,
-  connecting: true, // stay in connecting while retrying
+        connected: false,
+        connecting: true, // stay in connecting while retrying
         error: error.message || "Connection failed",
       }));
 
@@ -118,8 +122,8 @@ class WebSocketService {
       wsState.update((state) => ({
         ...state,
         connected: false,
-  connecting: true, // we'll be attempting reconnection
-  error: reason === 'io client disconnect' ? null : `Disconnected: ${reason}`,
+        connecting: true, // we'll be attempting reconnection
+        error: reason === "io client disconnect" ? null : `Disconnected: ${reason}`,
       }));
 
       // Auto-reconnect unless it was intentional
@@ -165,38 +169,44 @@ class WebSocketService {
     this.socket.on("events", (incoming: any) => {
       if (!incoming) return;
       const arr: any[] = Array.isArray(incoming) ? incoming : [incoming];
-      const processed: FullEvent[] = arr.map(e => {
+      const processed: FullEvent[] = arr.map((e) => {
         const ts = e.timestamp ? new Date(e.timestamp) : new Date();
         let parsedPayload = e.payload;
-        if (parsedPayload && typeof parsedPayload === 'string') {
-          try { parsedPayload = JSON.parse(parsedPayload); } catch { /* keep original */ }
+        if (parsedPayload && typeof parsedPayload === "string") {
+          try {
+            parsedPayload = JSON.parse(parsedPayload);
+          } catch {
+            /* keep original */
+          }
         }
         return {
           ...e,
-          id: e.id || `${ts.getTime()}-${Math.random().toString(36).slice(2,8)}`,
+          id: e.id || `${ts.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
           timestamp: ts,
-          payload: parsedPayload
+          payload: parsedPayload,
         } as FullEvent;
       });
-      fullEvents.update(current => [...processed, ...current].slice(0, 200));
+      fullEvents.update((current) => [...processed, ...current].slice(0, 200));
       // Derive lightweight live events (optional)
-      liveEvents.update(current => [
-        ...processed.map(e => ({
-          id: e.id!,
-          eventName: e.eventName,
+      liveEvents.update((current) =>
+        [
+          ...processed.map((e) => ({
+            id: e.id!,
+            eventName: e.eventName,
             // fallback fields
-          userId: e.payload?.userId || 'unknown',
-          country: e.payload?.country || e.country || 'N/A',
-          device: e.payload?.device || e.device || 'web',
-          timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
-          timeAgo: '',
-          severity: e.severity as any,
-          tags: e.tags,
-          // attach raw payload so UI can show it
-          payload: e.payload
-        })),
-        ...current
-      ].slice(0,50));
+            userId: e.payload?.userId || "unknown",
+            country: e.payload?.country || e.country || "N/A",
+            device: e.payload?.device || e.device || "web",
+            timestamp: e.timestamp instanceof Date ? e.timestamp : new Date(e.timestamp),
+            timeAgo: "",
+            severity: e.severity as any,
+            tags: e.tags,
+            // attach raw payload so UI can show it
+            payload: e.payload,
+          })),
+          ...current,
+        ].slice(0, 50)
+      );
     });
 
     // Authentication error
@@ -217,8 +227,8 @@ class WebSocketService {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       wsState.update((state) => ({
         ...state,
-  connecting: false,
-  error: "Connection failed after multiple attempts",
+        connecting: false,
+        error: "Connection failed after multiple attempts",
       }));
       return;
     }
