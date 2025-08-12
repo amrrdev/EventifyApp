@@ -211,18 +211,13 @@
 		<div class="text-[#e2e8f0] font-mono">Checking authentication...</div>
 	</div>
 {:else}
-	<main class="min-h-screen bg-[#1a202c] text-[#e2e8f0]">
+	<main class="min-h-screen bg-[#0f1520] text-[#e2e8f0]">
 		<!-- Header -->
-		<div class="border-b border-[#4a5568] bg-[#2d3748]">
+		<div class="border-b border-[#283347] bg-[#121826] sticky top-0 z-10">
 			<div class="max-w-7xl mx-auto px-6 py-4">
 				<div class="flex items-center justify-between">
-					<div class="flex items-center space-x-4">
-						<a
-							href="/dashboard"
-							class="text-[#63b3ed] hover:text-[#90cdf4] font-mono text-sm transition-colors"
-						>
-							← dashboard
-						</a>
+					<div class="flex items-center space-x-3">
+						<a href="/dashboard" class="text-[#63b3ed] hover:text-[#90cdf4] font-mono text-sm transition-colors">← dashboard</a>
 						<div>
 							<h1 class="text-2xl font-mono font-bold">
 								<span class="text-[#ed8936]">api</span>_keys
@@ -234,9 +229,9 @@
 					</div>
 					<button
 						onclick={() => showCreateModal = true}
-						class="bg-[#ed8936] hover:bg-[#dd7324] text-[#1a202c] font-mono font-bold px-4 py-2 rounded transition-colors"
+						class="px-4 py-2 bg-[#2d3748] border border-[#ed8936] text-[#ed8936] font-mono text-sm rounded hover:bg-[#ed8936] hover:text-[#0f1520] transition-colors"
 					>
-						+ Create API Key
+						+ create_api_key
 					</button>
 				</div>
 			</div>
@@ -302,7 +297,7 @@
 						{@const safeUsageCount = apiKey.usageCount || 0}
 						{@const safeUsageLimit = apiKey.usageLimit || 0}
 						{@const percentage = getUsagePercentage(safeUsageCount, safeUsageLimit)}
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 							<!-- Header with Name and Status -->
 							<div class="flex items-center justify-between mb-4">
 								<div class="flex items-center space-x-3">
@@ -336,7 +331,7 @@
 							<!-- API Key Display -->
 							<div class="mb-4">
 								<div class="flex items-center space-x-3">
-									<code class="bg-[#1a202c] border border-[#4a5568] rounded px-4 py-3 font-mono text-sm flex-1">
+								<code class="bg-[#0b111b] border border-[#283347] rounded px-4 py-3 font-mono text-sm flex-1">
 										{formatKey(apiKey.key, visibleKeys.has(apiKey.key))}
 									</code>
 									<div class="flex items-center space-x-2">
@@ -403,7 +398,7 @@
 	<!-- Create API Key Modal -->
 	{#if showCreateModal}
 		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-			<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6 w-full max-w-md mx-4">
+			<div class="bg-[#121826] border border-[#283347] rounded-lg p-6 w-full max-w-md mx-4">
 				<h2 class="text-xl font-mono font-bold mb-4">
 					<span class="text-[#ed8936]">create</span>_api_key
 				</h2>
@@ -417,7 +412,7 @@
 						bind:value={newKeyName}
 						type="text"
 						placeholder="e.g., Production App, Mobile Client"
-						class="w-full bg-[#1a202c] border border-[#4a5568] rounded px-3 py-2 font-mono text-sm focus:border-[#ed8936] focus:outline-none"
+						class="w-full bg-[#0b111b] border border-[#283347] rounded px-3 py-2 font-mono text-sm focus:border-[#ed8936] focus:outline-none"
 						disabled={creatingKey}
 					/>
 				</div>
@@ -433,7 +428,7 @@
 					<button
 						onclick={() => { showCreateModal = false; newKeyName = ''; }}
 						disabled={creatingKey}
-						class="px-4 py-2 border border-[#4a5568] rounded font-mono text-sm hover:bg-[#4a5568] transition-colors"
+						class="px-4 py-2 border border-[#283347] rounded font-mono text-sm hover:bg-[#283347] transition-colors"
 					>
 						Cancel
 					</button>
@@ -445,7 +440,7 @@
 	<!-- Delete Confirmation Modal -->
 	{#if showDeleteModal}
 		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-			<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6 w-full max-w-md mx-4">
+			<div class="bg-[#121826] border border-[#283347] rounded-lg p-6 w-full max-w-md mx-4">
 				<h2 class="text-xl font-mono font-bold mb-4">
 					<span class="text-[#f56565]">delete</span>_api_key
 				</h2>
@@ -461,7 +456,7 @@
 						bind:value={deleteConfirmText}
 						type="text"
 						placeholder="delete"
-						class="w-full bg-[#1a202c] border border-[#4a5568] rounded px-3 py-2 font-mono text-sm focus:border-[#f56565] focus:outline-none"
+						class="w-full bg-[#0b111b] border border-[#283347] rounded px-3 py-2 font-mono text-sm focus:border-[#f56565] focus:outline-none"
 					/>
 				</div>
 
@@ -469,13 +464,13 @@
 					<button
 						onclick={confirmDeleteApiKey}
 						disabled={deleteConfirmText.toLowerCase() !== 'delete'}
-						class="flex-1 bg-[#f56565] hover:bg-[#e53e3e] disabled:bg-[#4a5568] disabled:cursor-not-allowed text-[#1a202c] font-mono font-bold px-4 py-2 rounded transition-colors"
+						class="flex-1 bg-[#f56565] hover:bg-[#e53e3e] disabled:bg-[#4a5568] disabled:cursor-not-allowed text-[#0f1520] font-mono font-bold px-4 py-2 rounded transition-colors"
 					>
 						Delete API Key
 					</button>
 					<button
 						onclick={cancelDelete}
-						class="px-4 py-2 border border-[#4a5568] rounded font-mono text-sm hover:bg-[#4a5568] transition-colors"
+						class="px-4 py-2 border border-[#283347] rounded font-mono text-sm hover:bg-[#283347] transition-colors"
 					>
 						Cancel
 					</button>

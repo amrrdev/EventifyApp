@@ -148,9 +148,9 @@
 	<meta name="description" content="Complete guide for using the Eventify Node.js SDK" />
 </svelte:head>
 
-<div class="min-h-screen bg-[#1a1d23]">
+<div class="min-h-screen bg-[#0f1520]">
 	<!-- Hero Header -->
-	<header class="bg-gradient-to-r from-[#1a202c] via-[#2d3748] to-[#1a202c] border-b border-[#4a5568] shadow-2xl">
+	<header class="bg-gradient-to-r from-[#0f1520] via-[#121826] to-[#0f1520] border-b border-[#283347] shadow-2xl">
 		<div class="max-w-6xl mx-auto px-6 py-12">
 			<div class="text-center">
 				<div class="flex justify-center items-center space-x-4 mb-6">
@@ -165,10 +165,10 @@
 					Production-ready Node.js client for streaming events via gRPC. Built for scale, designed for developers.
 				</p>
 				<div class="flex justify-center space-x-4">
-					<div class="bg-[#2d3748] border border-[#68d391] rounded-lg px-4 py-2">
+					<div class="bg-[#121826] border border-[#68d391] rounded-lg px-4 py-2">
 						<span class="text-[#68d391] font-mono text-sm">npm install @eventify/sdk</span>
 					</div>
-					<a href="/dashboard" class="bg-[#63b3ed] hover:bg-[#4299e1] text-[#1a202c] font-mono px-6 py-2 rounded-lg transition-colors">
+					<a href="/dashboard" class="bg-[#63b3ed] hover:bg-[#4299e1] text-[#0f1520] font-mono px-6 py-2 rounded-lg transition-colors">
 						← Dashboard
 					</a>
 				</div>
@@ -177,14 +177,14 @@
 	</header>
 
 	<!-- Navigation Tabs -->
-	<nav class="bg-[#2d3748] border-b border-[#4a5568]">
+	<nav class="bg-[#121826] border-b border-[#283347]">
 		<div class="max-w-6xl mx-auto px-6">
 			<div class="flex space-x-1">
 				{#each tabs as tab}
 					<button
-						class="flex items-center space-x-2 px-6 py-4 font-mono text-sm transition-all duration-200 {activeTab === tab.id 
-							? 'bg-[#1a1d23] text-[#68d391] border-b-2 border-[#68d391]' 
-							: 'text-[#a0aec0] hover:text-[#e2e8f0] hover:bg-[#374151]'}"
+				class="flex items-center space-x-2 px-6 py-4 font-mono text-sm transition-all duration-200 {activeTab === tab.id 
+					? 'bg-[#0f1520] text-[#68d391] border-b-2 border-[#68d391]' 
+					: 'text-[#a0aec0] hover:text-[#e2e8f0] hover:bg-[#283347]'}"
 						onclick={() => activeTab = tab.id}
 					>
 						<span>{tab.icon}</span>
@@ -200,12 +200,12 @@
 		{#if activeTab === 'quickstart'}
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 				<!-- Installation -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<h2 class="text-xl font-mono font-bold text-[#ed8936] mb-4 flex items-center">
 						<span class="text-2xl mr-2">📥</span> Installation
 					</h2>
 					<div class="relative">
-						<pre class="bg-[#1a202c] text-[#68d391] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>npm install @eventify/sdk</code></pre>
+						<pre class="bg-[#0b111b] text-[#68d391] rounded-lg p-4 font-mono text-sm overflow-x-auto">
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode('npm install @eventify/sdk', 'install')}
@@ -216,12 +216,12 @@
 				</div>
 
 				<!-- Quick Start -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<h2 class="text-xl font-mono font-bold text-[#ed8936] mb-4 flex items-center">
 						<span class="text-2xl mr-2">⚡</span> Quick Start
 					</h2>
 					<div class="relative">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.quickstart}</code></pre>
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto">
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const eventify = require('@eventify/sdk');\n\n// Initialize\nawait eventify.init('your-api-key');\n\n// Send events\neventify.event({\n  eventName: 'user_signup',\n  payload: { userId: '123' }\n});`, 'quickstart')}
@@ -234,17 +234,17 @@
 
 			<!-- Key Concepts -->
 			<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-				<div class="bg-[#2d3748] border border-[#63b3ed] rounded-lg p-6 text-center">
+				<div class="bg-[#121826] border border-[#63b3ed] rounded-lg p-6 text-center">
 					<div class="text-3xl mb-3">🔐</div>
 					<h3 class="font-mono font-bold text-[#63b3ed] mb-2">Initialize Once</h3>
 					<p class="text-[#a0aec0] font-mono text-sm">Call init() once with your API key before sending events</p>
 				</div>
-				<div class="bg-[#2d3748] border border-[#68d391] rounded-lg p-6 text-center">
+				<div class="bg-[#121826] border border-[#68d391] rounded-lg p-6 text-center">
 					<div class="text-3xl mb-3">🚀</div>
 					<h3 class="font-mono font-bold text-[#68d391] mb-2">Fire & Forget</h3>
 					<p class="text-[#a0aec0] font-mono text-sm">event() returns immediately, no need to await</p>
 				</div>
-				<div class="bg-[#2d3748] border border-[#ed8936] rounded-lg p-6 text-center">
+				<div class="bg-[#121826] border border-[#ed8936] rounded-lg p-6 text-center">
 					<div class="text-3xl mb-3">💪</div>
 					<h3 class="font-mono font-bold text-[#ed8936] mb-2">Production Ready</h3>
 					<p class="text-[#a0aec0] font-mono text-sm">Built-in reconnection, buffering, and error handling</p>
@@ -254,7 +254,7 @@
 		{:else if activeTab === 'api'}
 			<div class="space-y-8">
 				<!-- Init Method -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">🔧</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">eventify.init(apiKey, options?)</h2>
@@ -262,7 +262,7 @@
 					<p class="text-[#a0aec0] font-mono mb-4">Initialize the SDK with your API key. Must be awaited before sending events.</p>
 					
 					<div class="relative mb-4">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.init}</code></pre>
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.init}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`await eventify.init('your-api-key', {\n  host: 'grpc.eventify.com',\n  port: 443,\n  useTls: true,\n  maxRetries: 3,\n  timeout: 5000\n});`, 'init')}
@@ -271,7 +271,7 @@
 						</button>
 					</div>
 
-					<div class="bg-[#1a202c] rounded-lg p-4">
+					<div class="bg-[#0b111b] rounded-lg p-4">
 						<h4 class="font-mono font-bold text-[#ed8936] mb-2">Parameters:</h4>
 						<ul class="space-y-2 font-mono text-sm">
 							<li><span class="text-[#63b3ed]">apiKey</span> <span class="text-[#a0aec0]">(string) - Your Eventify API key</span></li>
@@ -281,7 +281,7 @@
 				</div>
 
 				<!-- Event Method -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">⚡</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">eventify.event(eventData)</h2>
@@ -289,8 +289,8 @@
 					<p class="text-[#a0aec0] font-mono mb-4">Send an event. Returns immediately (fire-and-forget pattern).</p>
 					
 					<div class="relative mb-4">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.event}</code></pre>
-						<button 
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.event}</code></pre>
+						<button
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`eventify.event({\n  eventName: 'user_action',\n  payload: { action: 'click' },\n  category: 'user',\n  severity: 'INFO',\n  tags: ['ui', 'interaction'],\n  timestamp: '2025-01-01T00:00:00Z'\n});`, 'event')}
 						>
@@ -298,7 +298,7 @@
 						</button>
 					</div>
 
-					<div class="bg-[#1a202c] rounded-lg p-4">
+					<div class="bg-[#0b111b] rounded-lg p-4">
 						<h4 class="font-mono font-bold text-[#ed8936] mb-2">Event Data Fields:</h4>
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-sm">
 							<div>
@@ -322,18 +322,18 @@
 				</div>
 
 				<!-- Status Methods -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">📊</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">Status Methods</h2>
 					</div>
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div class="bg-[#1a202c] rounded-lg p-4">
+						<div class="bg-[#0b111b] rounded-lg p-4">
 							<h4 class="font-mono font-bold text-[#63b3ed] mb-2">eventify.isOnline()</h4>
 							<p class="text-[#a0aec0] font-mono text-sm mb-2">Returns boolean indicating connection status</p>
 							<pre class="font-mono text-xs"><code>{@html codeSnippets.statusOnline}</code></pre>
 						</div>
-						<div class="bg-[#1a202c] rounded-lg p-4">
+						<div class="bg-[#0b111b] rounded-lg p-4">
 							<h4 class="font-mono font-bold text-[#63b3ed] mb-2">eventify.getQueueSize()</h4>
 							<p class="text-[#a0aec0] font-mono text-sm mb-2">Returns number of queued events</p>
 							<pre class="font-mono text-xs"><code>{@html codeSnippets.statusQueue}</code></pre>
@@ -345,7 +345,7 @@
 		{:else if activeTab === 'examples'}
 			<div class="space-y-8">
 				<!-- Express Example -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">🚀</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">Express.js Server</h2>
@@ -353,7 +353,7 @@
 					<p class="text-[#a0aec0] font-mono mb-4">Integration with Express.js web server</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.express}</code></pre>
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.express}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const express = require('express');\nconst eventify = require('@eventify/sdk');\n\nconst app = express();\napp.use(express.json());\n\nasync function startServer() {\n  await eventify.init(process.env.EVENTIFY_API_KEY);\n  console.log('✅ Eventify SDK initialized');\n  \n  app.post('/api/users', (req, res) => {\n    eventify.event({\n      eventName: 'user_created',\n      payload: { \n        userId: req.body.id,\n        email: req.body.email,\n        plan: req.body.plan \n      },\n      category: 'user',\n      severity: 'INFO',\n      tags: ['registration', 'api']\n    });\n    \n    res.json({ success: true });\n  });\n  \n  app.listen(3000);\n}\n\nstartServer().catch(console.error);`, 'express')}
@@ -364,7 +364,7 @@
 				</div>
 
 				<!-- Serverless Example -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">⚡</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">AWS Lambda Function</h2>
@@ -372,7 +372,7 @@
 					<p class="text-[#a0aec0] font-mono mb-4">Serverless function with container reuse optimization</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.lambda}</code></pre>
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.lambda}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const eventify = require('@eventify/sdk');\n\nlet initialized = false;\n\nexports.handler = async (event, context) => {\n  try {\n    if (!initialized) {\n      await eventify.init(process.env.EVENTIFY_API_KEY);\n      initialized = true;\n    }\n    \n    eventify.event({\n      eventName: 'lambda_invocation',\n      payload: { \n        functionName: context.functionName,\n        requestId: context.awsRequestId\n      },\n      category: 'serverless'\n    });\n    \n    return { statusCode: 200, body: 'OK' };\n  } catch (error) {\n    eventify.event({\n      eventName: 'lambda_error',\n      payload: { error: error.message },\n      severity: 'ERROR'\n    });\n    throw error;\n  }\n};`, 'lambda')}
@@ -383,7 +383,7 @@
 				</div>
 
 				<!-- Error Handling Example -->
-				<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+				<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 					<div class="flex items-center mb-4">
 						<span class="text-2xl mr-3">🛡️</span>
 						<h2 class="text-xl font-mono font-bold text-[#68d391]">Error Handling</h2>
@@ -391,7 +391,7 @@
 					<p class="text-[#a0aec0] font-mono mb-4">Proper error handling and recovery patterns</p>
 					
 					<div class="relative">
-						<pre class="bg-[#1a202c] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.errorHandling}</code></pre>
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.errorHandling}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`try {\n  await eventify.init(process.env.EVENTIFY_API_KEY);\n} catch (error) {\n  console.error('Failed to initialize:', error.message);\n  \n  if (error.code === 'INVALID_API_KEY') {\n    process.exit(1);\n  }\n}\n\n// Event validation\ntry {\n  eventify.event({ eventName: 'test' });\n} catch (error) {\n  console.warn('Invalid event:', error.message);\n}`, 'error')}
@@ -406,7 +406,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 				<!-- Production Features -->
 				<div class="space-y-6">
-					<div class="bg-[#2d3748] border border-[#68d391] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#68d391] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">🔐</span>
 							<h3 class="text-lg font-mono font-bold text-[#68d391]">API Key Validation</h3>
@@ -419,7 +419,7 @@
 						</ul>
 					</div>
 
-					<div class="bg-[#2d3748] border border-[#63b3ed] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#63b3ed] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">🔄</span>
 							<h3 class="text-lg font-mono font-bold text-[#63b3ed]">Auto-reconnection</h3>
@@ -432,7 +432,7 @@
 						</ul>
 					</div>
 
-					<div class="bg-[#2d3748] border border-[#ed8936] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#ed8936] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">💾</span>
 							<h3 class="text-lg font-mono font-bold text-[#ed8936]">Offline Buffering</h3>
@@ -447,7 +447,7 @@
 				</div>
 
 				<div class="space-y-6">
-					<div class="bg-[#2d3748] border border-[#a78bfa] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#a78bfa] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">🧠</span>
 							<h3 class="text-lg font-mono font-bold text-[#a78bfa]">Memory Management</h3>
@@ -460,7 +460,7 @@
 						</ul>
 					</div>
 
-					<div class="bg-[#2d3748] border border-[#f56565] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#f56565] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">🛡️</span>
 							<h3 class="text-lg font-mono font-bold text-[#f56565]">Graceful Shutdown</h3>
@@ -473,7 +473,7 @@
 						</ul>
 					</div>
 
-					<div class="bg-[#2d3748] border border-[#38b2ac] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#38b2ac] rounded-lg p-6">
 						<div class="flex items-center mb-4">
 							<span class="text-2xl mr-3">📘</span>
 							<h3 class="text-lg font-mono font-bold text-[#38b2ac]">TypeScript Support</h3>
@@ -489,25 +489,25 @@
 			</div>
 
 			<!-- Performance Stats -->
-			<div class="mt-8 bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+			<div class="mt-8 bg-[#121826] border border-[#283347] rounded-lg p-6">
 				<div class="flex items-center mb-4">
 					<span class="text-2xl mr-3">📊</span>
 					<h3 class="text-xl font-mono font-bold text-[#68d391]">Performance Characteristics</h3>
 				</div>
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-					<div class="bg-[#1a202c] rounded-lg p-4 text-center">
+					<div class="bg-[#0b111b] rounded-lg p-4 text-center">
 						<div class="text-2xl font-mono font-bold text-[#68d391] mb-1">&lt; 1ms</div>
 						<div class="text-[#a0aec0] font-mono text-xs">Event Send Latency</div>
 					</div>
-					<div class="bg-[#1a202c] rounded-lg p-4 text-center">
+					<div class="bg-[#0b111b] rounded-lg p-4 text-center">
 						<div class="text-2xl font-mono font-bold text-[#63b3ed] mb-1">10k+</div>
 						<div class="text-[#a0aec0] font-mono text-xs">Events/sec Throughput</div>
 					</div>
-					<div class="bg-[#1a202c] rounded-lg p-4 text-center">
+					<div class="bg-[#0b111b] rounded-lg p-4 text-center">
 						<div class="text-2xl font-mono font-bold text-[#ed8936] mb-1">&lt; 5MB</div>
 						<div class="text-[#a0aec0] font-mono text-xs">Memory Footprint</div>
 					</div>
-					<div class="bg-[#1a202c] rounded-lg p-4 text-center">
+					<div class="bg-[#0b111b] rounded-lg p-4 text-center">
 						<div class="text-2xl font-mono font-bold text-[#a78bfa] mb-1">99.9%</div>
 						<div class="text-[#a0aec0] font-mono text-xs">Delivery Reliability</div>
 					</div>
@@ -515,13 +515,13 @@
 			</div>
 
 			<!-- Environment Setup -->
-			<div class="mt-8 bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+			<div class="mt-8 bg-[#121826] border border-[#283347] rounded-lg p-6">
 				<div class="flex items-center mb-4">
 					<span class="text-2xl mr-3">⚙️</span>
 					<h3 class="text-xl font-mono font-bold text-[#ed8936]">Environment Setup</h3>
 				</div>
 				<div class="relative">
-					<pre class="bg-[#1a202c] text-[#68d391] rounded-lg p-4 font-mono text-sm"><code># .env file
+					<pre class="bg-[#0b111b] text-[#68d391] rounded-lg p-4 font-mono text-sm"><code># .env file
 EVENTIFY_API_KEY=your-api-key-here
 
 # Optional configuration
@@ -540,7 +540,7 @@ EVENTIFY_USE_TLS=true</code></pre>
 	</main>
 
 	<!-- Footer -->
-	<footer class="bg-[#2d3748] border-t border-[#4a5568] mt-12">
+	<footer class="bg-[#121826] border-t border-[#283347] mt-12">
 		<div class="max-w-6xl mx-auto px-6 py-8">
 			<div class="flex justify-between items-center">
 				<div class="text-[#a0aec0] font-mono text-sm">
@@ -561,7 +561,7 @@ EVENTIFY_USE_TLS=true</code></pre>
 		width: 8px;
 	}
 	::-webkit-scrollbar-track {
-		background: #2d3748;
+		background: #121826;
 	}
 	::-webkit-scrollbar-thumb {
 		background: #68d391;

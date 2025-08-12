@@ -209,9 +209,9 @@
 		</div>
 	</div>
 {:else if authState.isAuthenticated && authState.user}
-	<div class="min-h-screen bg-[#1a1d23]">
-		<!-- Header -->
-		<header class="bg-gradient-to-r from-[#1a202c] to-[#2d3748] border-b border-[#4a5568] shadow-xl">
+	<div class="min-h-screen bg-[#0f1520]">
+<!-- Header -->
+		<header class="bg-gradient-to-r from-[#0f1520] via-[#121826] to-[#0f1520] border-b border-[#283347] shadow-2xl">
 			<div class="max-w-7xl mx-auto px-6">
 				<div class="flex items-center justify-between h-18 py-2">
 					<!-- Left Section: Brand & Status -->
@@ -317,7 +317,7 @@
 				{#if metrics}
 					<div class="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 						<!-- Total Events -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-[#a0aec0] font-mono text-xs">total_events</span>
 								<span class="text-xl">📊</span>
@@ -331,7 +331,7 @@
 						</div>
 
 						<!-- Active Users -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-[#a0aec0] font-mono text-xs">active_users</span>
 								<span class="text-xl">👥</span>
@@ -345,7 +345,7 @@
 						</div>
 
 						<!-- Events Per Hour -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-[#a0aec0] font-mono text-xs">events_per_hour</span>
 								<span class="text-xl">⚡</span>
@@ -359,7 +359,7 @@
 						</div>
 
 						<!-- Conversion Rate -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-[#a0aec0] font-mono text-xs">conversion_rate</span>
 								<span class="text-xl">🎯</span>
@@ -387,7 +387,7 @@
 
 				<!-- Error Alert Panel (1 column) -->
 				<div class="lg:col-span-1">
-					<div class="bg-[#2d3748] border border-{totalErrors > 0 ? '[#f56565]' : '[#4a5568]'} rounded-lg p-4 h-full">
+					<div class="bg-[#121826] border border-{totalErrors > 0 ? '[#f56565]' : '[#283347]'} rounded-lg p-4 h-full">
 						<div class="flex items-center justify-between mb-2">
 							<span class="text-[#a0aec0] font-mono text-xs">system_errors</span>
 							<span class="text-xl">{totalErrors > 0 ? '🚨' : '✅'}</span>
@@ -410,7 +410,7 @@
 			<!-- Event Categories Chart -->
 			{#if metrics}
 				<div class="mb-6">
-					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-6">
+					<div class="bg-[#121826] border border-[#283347] rounded-lg p-6">
 						<div class="flex items-center justify-between mb-4">
 							<h3 class="text-[#e2e8f0] font-mono font-bold">
 								<span class="text-[#ed8936]">event</span>_distribution
@@ -464,9 +464,9 @@
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				<!-- Live Events Feed (2 columns) - FIRST -->
 				<div class="lg:col-span-2 order-1">
-					<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg">
+					<div class="bg-[#121826] border border-[#283347] rounded-lg">
 						<!-- Header -->
-						<div class="flex items-center justify-between px-4 py-3 border-b border-[#4a5568]">
+						<div class="flex items-center justify-between px-4 py-3 border-b border-[#283347] bg-[#111625]">
 							<div class="flex items-center space-x-2">
 								<div class="w-3 h-3 bg-[#f56565] rounded-full"></div>
 								<div class="w-3 h-3 bg-[#ed8936] rounded-full"></div>
@@ -539,7 +539,7 @@
 				<div class="lg:col-span-1 order-2 space-y-4">
 					{#if metrics}
 						<!-- Top Events -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
 								<span class="text-[#ed8936]">top</span>_events
 							</h3>
@@ -561,7 +561,7 @@
 
 
 						<!-- System Health -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
 								<span class="text-[#ed8936]">system</span>_health
 							</h3>
@@ -588,7 +588,7 @@
 						</div>
 
 						<!-- Geographic Top 3 -->
-						<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+						<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 							<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
 								<span class="text-[#ed8936]">top</span>_regions
 							</h3>
@@ -606,7 +606,7 @@
 
 						<!-- Event Categories Pie Chart -->
 						{#if metrics}
-							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4">
+							<div class="bg-[#121826] border border-[#283347] rounded-lg p-4">
 								<h3 class="text-[#e2e8f0] font-mono font-bold text-sm mb-3">
 									<span class="text-[#ed8936]">event</span>_pie
 								</h3>
@@ -668,7 +668,7 @@
 					{:else}
 						<!-- Loading Analytics -->
 						{#each Array(4) as _}
-							<div class="bg-[#2d3748] border border-[#4a5568] rounded-lg p-4 animate-pulse">
+							<div class="bg-[#121826] border border-[#283347] rounded-lg p-4 animate-pulse">
 								<div class="h-3 bg-[#4a5568] rounded mb-3"></div>
 								<div class="space-y-2">
 									{#each Array(3) as _}
