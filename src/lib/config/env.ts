@@ -4,10 +4,9 @@
 
 export const config = {
   // API Configuration
-  // Use proxy in development to avoid mixed content issues
-  // In production, make sure your backend supports HTTPS
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 
-    (import.meta.env.DEV ? "/api" : "http://api.evntfy.tech/api/v1"),
+  // Use proxy for both development and production to avoid mixed content issues
+  // The proxy is configured in vite.config.ts (dev) and vercel.json (production)
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "/api",
 
   // App Configuration
   APP_VERSION: "1.0.0",
