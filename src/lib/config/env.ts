@@ -4,8 +4,10 @@
 
 export const config = {
   // API Configuration
-  // API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://74.242.137.80/api/v1",
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://api.evntfy.tech/api/v1",
+  // Use proxy in development to avoid mixed content issues
+  // In production, make sure your backend supports HTTPS
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 
+    (import.meta.env.DEV ? "/api" : "http://api.evntfy.tech/api/v1"),
 
   // App Configuration
   APP_VERSION: "1.0.0",

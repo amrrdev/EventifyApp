@@ -29,6 +29,26 @@ export default defineConfig({
     fs: {
       strict: false,
     },
+    // Proxy API requests to avoid mixed content issues
+    proxy: {
+      '/api': {
+        target: 'http://api.evntfy.tech',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
+    },
   },
 
   // Optimize dependencies
