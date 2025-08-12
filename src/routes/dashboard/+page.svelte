@@ -209,89 +209,143 @@
 		</div>
 	</div>
 {:else if authState.isAuthenticated && authState.user}
-	<div class="min-h-screen bg-[#0f1520]">
-<!-- Header -->
-		<header class="bg-gradient-to-r from-[#0f1520] via-[#121826] to-[#0f1520] border-b border-[#283347] shadow-2xl">
-			<div class="max-w-7xl mx-auto px-6">
-				<div class="flex items-center justify-between h-18 py-2">
-					<!-- Left Section: Brand & Status -->
-					<div class="flex items-center space-x-6">
-						<div class="flex items-center space-x-3">
-							<div class="w-10 h-10 bg-gradient-to-br from-[#ed8936] to-[#f6ad55] flex items-center justify-center rounded-lg shadow-lg">
-								<span class="text-lg">⚡</span>
-							</div>
-							<div class="font-mono text-lg font-semibold">
-								<span class="text-[#ed8936]">event</span><span class="text-[#4a5568]">:</span><span class="text-[#68d391]">dashboard</span>
-							</div>
-						</div>
-						
-						<!-- Connection Status -->
-						<div class="flex items-center space-x-3 px-3 py-1.5 bg-[#374151] rounded-full">
-							{#if wsConnectionState.connected}
-								<div class="w-2.5 h-2.5 bg-[#68d391] rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
-								<span class="text-[#68d391] font-mono text-sm font-medium">LIVE</span>
-							{:else if wsConnectionState.connecting}
-								<div class="w-2.5 h-2.5 bg-[#ed8936] rounded-full animate-pulse shadow-lg shadow-orange-500/50"></div>
-								<span class="text-[#ed8936] font-mono text-sm font-medium">CONNECTING</span>
-							{:else}
-								<div class="w-2.5 h-2.5 bg-[#f56565] rounded-full shadow-lg shadow-red-500/50"></div>
-								<span class="text-[#f56565] font-mono text-sm font-medium">OFFLINE</span>
-								<button 
-									onclick={handleReconnect}
-									class="ml-2 px-2 py-1 bg-[#1a202c] border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded-md hover:bg-[#63b3ed] hover:text-[#1a202c] transition-all duration-200"
-								>
-									reconnect()
-								</button>
-							{/if}
-						</div>
+<div class="min-h-screen bg-[#0f1520] flex">
+		<!-- Left Sidebar Navigation -->
+		<aside class="w-72 bg-gradient-to-b from-[#121826] to-[#0f1520] border-r border-[#283347] shadow-2xl flex flex-col">
+			<!-- Brand Header -->
+			<div class="p-6 border-b border-[#283347]">
+				<div class="flex items-center space-x-3 mb-4">
+					<div class="w-12 h-12 bg-gradient-to-br from-[#ed8936] to-[#f6ad55] flex items-center justify-center rounded-xl shadow-lg">
+						<span class="text-xl">⚡</span>
 					</div>
-					
-					<!-- Center Navigation -->
-					<div class="flex items-center space-x-2 bg-[#374151]/50 rounded-xl p-1">
-						<a
-							href="/api-keys"
-							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#63b3ed]/30 text-[#63b3ed] font-mono text-sm rounded-lg hover:bg-[#63b3ed] hover:text-[#1a202c] hover:border-[#63b3ed] transition-all duration-200 shadow-lg"
-						>
-							🔑 <span>api_keys</span>
-						</a>
-						<a
-							href="/events"
-							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#a78bfa]/30 text-[#a78bfa] font-mono text-sm rounded-lg hover:bg-[#a78bfa] hover:text-[#1a202c] hover:border-[#a78bfa] transition-all duration-200 shadow-lg"
-						>
-							⚡ <span>events</span>
-						</a>
-						<a
-							href="/sdk"
-							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#68d391]/30 text-[#68d391] font-mono text-sm rounded-lg hover:bg-[#68d391] hover:text-[#1a202c] hover:border-[#68d391] transition-all duration-200 shadow-lg"
-						>
-							📦 <span>sdk</span>
-						</a>
-						<button
-							onclick={toggleDemoMode}
-							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-{demoMode ? '[#68d391]/30' : '[#ed8936]/30'} text-{demoMode ? '[#68d391]' : '[#ed8936]'} font-mono text-sm rounded-lg hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:text-[#1a202c] hover:border-{demoMode ? '[#68d391]' : '[#ed8936]'} transition-all duration-200 shadow-lg"
-						>
-							{demoMode ? '✨ demo: ON' : '⭕ demo: OFF'}
-						</button>
-					</div>
-					
-					<!-- Right Section: User & Actions -->
-					<div class="flex items-center space-x-4">
-						<div class="text-[#e2e8f0] font-mono text-sm font-medium px-3 py-1.5 bg-[#374151] rounded-full">
-							{authState.user.name}
+					<div>
+						<div class="font-mono text-lg font-bold">
+							<span class="text-[#ed8936]">Eventify</span>
 						</div>
-						<button
-							onclick={handleSignOut}
-							class="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#f56565]/30 text-[#f56565] font-mono text-sm rounded-lg hover:bg-[#f56565] hover:text-[#1a202c] hover:border-[#f56565] transition-all duration-200 shadow-lg"
-						>
-							🚪 <span>logout()</span>
-						</button>
+						<div class="text-[#a0aec0] font-mono text-xs">Real-time Analytics</div>
 					</div>
 				</div>
+				
+				<!-- Connection Status -->
+				<div class="flex items-center justify-between p-3 bg-[#1a202c] rounded-lg">
+					<div class="flex items-center space-x-2">
+						{#if wsConnectionState.connected}
+							<div class="w-2 h-2 bg-[#68d391] rounded-full animate-pulse"></div>
+							<span class="text-[#68d391] font-mono text-xs font-medium">LIVE</span>
+						{:else if wsConnectionState.connecting}
+							<div class="w-2 h-2 bg-[#ed8936] rounded-full animate-pulse"></div>
+							<span class="text-[#ed8936] font-mono text-xs font-medium">CONNECTING</span>
+						{:else}
+							<div class="w-2 h-2 bg-[#f56565] rounded-full"></div>
+							<span class="text-[#f56565] font-mono text-xs font-medium">OFFLINE</span>
+						{/if}
+					</div>
+					{#if !wsConnectionState.connected && !wsConnectionState.connecting}
+						<button
+							onclick={handleReconnect}
+							class="px-2 py-1 bg-[#63b3ed]/10 border border-[#63b3ed] text-[#63b3ed] font-mono text-xs rounded hover:bg-[#63b3ed] hover:text-[#1a202c] transition-all duration-200"
+						>
+							🔄
+						</button>
+					{/if}
+				</div>
 			</div>
-		</header>
 
-		<!-- Main Dashboard -->
-		<main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+			<!-- Navigation Menu -->
+			<nav class="flex-1 p-6 space-y-2">
+				<div class="text-[#a0aec0] font-mono text-xs uppercase tracking-wider mb-4">Navigation</div>
+				
+				<!-- Dashboard Link (Current) -->
+				<div class="flex items-center gap-3 px-4 py-3 bg-[#ed8936]/10 border border-[#ed8936]/30 text-[#ed8936] font-mono text-sm rounded-lg">
+					<span class="text-lg">📊</span>
+					<span>Dashboard</span>
+					<div class="ml-auto w-2 h-2 bg-[#ed8936] rounded-full"></div>
+				</div>
+
+				<a
+					href="/events"
+					class="flex items-center gap-3 px-4 py-3 text-[#a0aec0] hover:text-[#a78bfa] hover:bg-[#a78bfa]/10 font-mono text-sm rounded-lg transition-all duration-200 group"
+				>
+					<span class="text-lg group-hover:scale-110 transition-transform">⚡</span>
+					<span>Events</span>
+				</a>
+
+				<a
+					href="/api-keys"
+					class="flex items-center gap-3 px-4 py-3 text-[#a0aec0] hover:text-[#63b3ed] hover:bg-[#63b3ed]/10 font-mono text-sm rounded-lg transition-all duration-200 group"
+				>
+					<span class="text-lg group-hover:scale-110 transition-transform">🔑</span>
+					<span>API Keys</span>
+				</a>
+
+				<a
+					href="/sdk"
+					class="flex items-center gap-3 px-4 py-3 text-[#a0aec0] hover:text-[#68d391] hover:bg-[#68d391]/10 font-mono text-sm rounded-lg transition-all duration-200 group"
+				>
+					<span class="text-lg group-hover:scale-110 transition-transform">📦</span>
+					<span>SDK & Docs</span>
+				</a>
+
+				<!-- Settings Section -->
+				<div class="pt-6 border-t border-[#283347] mt-6">
+					<div class="text-[#a0aec0] font-mono text-xs uppercase tracking-wider mb-4">Settings</div>
+					
+					<button
+						onclick={toggleDemoMode}
+						class="w-full flex items-center gap-3 px-4 py-3 text-{demoMode ? '[#68d391]' : '[#ed8936]'} hover:bg-{demoMode ? '[#68d391]' : '[#ed8936]'}/10 font-mono text-sm rounded-lg transition-all duration-200 group mb-3"
+					>
+						<span class="text-lg group-hover:scale-110 transition-transform">{demoMode ? '✨' : '⭕'}</span>
+						<span>Demo Mode</span>
+						<div class="ml-auto text-xs opacity-70">{demoMode ? 'ON' : 'OFF'}</div>
+					</button>
+					
+					<button
+						onclick={handleSignOut}
+						class="w-full flex items-center gap-3 px-4 py-3 bg-[#1e293b] border border-[#f56565]/30 text-[#f56565] hover:bg-[#f56565] hover:text-[#1a202c] font-mono text-sm rounded-lg transition-all duration-200 group"
+					>
+						<span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
+						<span>Sign Out</span>
+					</button>
+				</div>
+			</nav>
+		</aside>
+
+		<!-- Main Content Area -->
+		<main class="flex-1 overflow-auto">
+			<!-- Top Header Bar -->
+			<header class="bg-[#121826] border-b border-[#283347] px-8 py-4">
+				<div class="flex items-center justify-between">
+					<div>
+						<h1 class="text-2xl font-mono font-bold text-[#e2e8f0] mb-1">
+							<span class="text-[#ed8936]">Event</span> <span class="text-[#68d391]">Dashboard</span>
+						</h1>
+						<p class="text-[#a0aec0] font-mono text-sm">Real-time analytics and event monitoring</p>
+					</div>
+					
+					<!-- User Section in Top Right -->
+					<div class="flex items-center space-x-4">
+						<div class="text-right">
+							<div class="text-[#a0aec0] font-mono text-xs">
+								Last updated: {wsConnectionState.lastUpdate?.toLocaleTimeString() || 'Never'}
+							</div>
+						</div>
+						<div class="flex items-center space-x-3 px-4 py-2 bg-[#1a202c] rounded-lg">
+							<div class="w-8 h-8 bg-gradient-to-br from-[#4a5568] to-[#2d3748] rounded-full flex items-center justify-center">
+								<span class="text-[#e2e8f0] font-mono text-xs font-bold">
+									{authState.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+								</span>
+							</div>
+							<div>
+								<div class="text-[#e2e8f0] font-mono text-sm font-medium">{authState.user?.name || 'User'}</div>
+								<div class="text-[#a0aec0] font-mono text-xs">Admin</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<!-- Dashboard Content -->
+			<div class="p-8">
 			{#if !wsConnectionState.connected && !wsConnectionState.connecting}
 				<!-- Connection Error State -->
 				<div class="bg-[#2d1b1b] border border-[#744444] rounded-lg p-6 mb-6">
@@ -682,6 +736,7 @@
 						{/each}
 					{/if}
 				</div>
+			</div>
 			</div>
 		</main>
 	</div>
