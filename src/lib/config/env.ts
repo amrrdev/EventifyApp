@@ -7,6 +7,10 @@ export const config = {
   // Use proxy for both development and production to avoid mixed content issues
   // The proxy is configured in vite.config.ts (dev) and vercel.json (production)
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "/api",
+  
+  // WebSocket Configuration
+  // WebSocket connections need to go directly to the backend (can't be proxied easily)
+  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || "ws://api.evntfy.tech",
 
   // App Configuration
   APP_VERSION: "1.0.0",

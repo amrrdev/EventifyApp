@@ -33,6 +33,19 @@ class WebSocketService {
 
   async connect(): Promise<void> {
     if (!browser) return;
+    
+    // Disable WebSocket in production until backend supports WSS (secure WebSocket)
+    // HTTPS pages cannot connect to WS (insecure) endpoints
+    if (import.meta.env.PROD && window.location.protocol === 'https:' && config.WS_BASE_URL.startsWith('ws:')) {
+      console.warn('WebSocket disabled in production HTTPS environment. Backend needs WSS support.');
+      wsState.update((state) => ({
+        ...state,
+        connected: false,
+        connecting: false,
+        error: 'WebSocket disabled (HTTPS requires WSS backend)',
+      }));
+      return;
+    }
 
     // Get access token from auth API
     const { authAPI } = await import("$lib/api/auth");
@@ -62,9 +75,8 @@ class WebSocketService {
 
     try {
       // Create WebSocket connection with token authentication
-      const wsUrl = config.API_BASE_URL.replace("/api/v1", "")
-        .replace("http://", "ws://")
-        .replace("https://", "wss://");
+      // Use dedicated WebSocket URL from config
+      const wsUrl = config.WS_BASE_URL;
 
       this.socket = io(wsUrl, {
         query: { token: accessToken },
