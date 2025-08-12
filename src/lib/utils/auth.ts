@@ -37,6 +37,7 @@ export async function initializeAuth(): Promise<boolean> {
     authStore.clearAuth();
     return false;
   } catch (error) {
+    // Handle initialization errors gracefully
     authStore.clearAuth();
     return false;
   }
@@ -63,6 +64,7 @@ export function isAuthRoute(pathname: string): boolean {
     "/auth/verify",
     "/auth/forgot-password",
     "/auth/reset-password",
+    "/verify"
   ];
 
   return authRoutes.some((route) => pathname.startsWith(route));
@@ -154,29 +156,13 @@ export async function checkAuthStatus(): Promise<boolean> {
 
 /**
  * Set up automatic token refresh before expiration
- * This runs in the background and refreshes tokens proactively
- * Only refreshes if user is actually authenticated
+ * Note: The AuthAPI now handles proactive refresh automatically via JWT expiration parsing
+ * This function is kept for backward compatibility but is now a no-op
  */
 export function setupAutoRefresh() {
-  if (!browser) return;
-
-  // Refresh token every 14 minutes (assuming 15-minute token expiration)
-  const refreshInterval = 14 * 60 * 1000; // 14 minutes in milliseconds
-
-  setInterval(async () => {
-    const authState = authStore.getCurrentState();
-
-    // Only refresh if user is actually authenticated with a valid token
-    if (authState.isAuthenticated && authState.accessToken) {
-      try {
-        console.log("Auto-refreshing token...");
-        await refreshToken();
-      } catch (error) {
-        console.error("Auto refresh failed:", error);
-        // If refresh fails, user will be redirected to login on next API call
-      }
-    }
-  }, refreshInterval);
+  // Proactive refresh is now handled automatically by AuthAPI.scheduleProactiveRefresh()
+  // which is called whenever a token is set via setAccessToken()
+// Proactive token refresh is handled automatically by AuthAPI
 }
 
 /**

@@ -44,28 +44,30 @@
 	});
 
 	onMount(async () => {
+		// Wait longer for layout to finish auth initialization
+		let attempts = 0;
+		const maxAttempts = 50; // 5 seconds max
 		
-		// Wait longer for layout to finish initializing auth
-		await new Promise(resolve => setTimeout(resolve, 200));
-		
-		// Get fresh auth state after layout initialization
-		authState = $authStore;
-		let isAuthenticated = authState.isAuthenticated;
-		
-		// Only try to restore auth if it's not already initialized by layout
-		if (!isAuthenticated) {
-			// Try to restore session from cookie only if not already authenticated
-			isAuthenticated = await authStore.initAuth();
+		while (attempts < maxAttempts) {
+			authState = $authStore;
+			
+			// If we have a clear auth state (either authenticated or definitively not)
+			if (authState.isAuthenticated || (!authState.isLoading && !authState.isAuthenticated && attempts > 10)) {
+				break;
+			}
+			
+			// Wait a bit more
+			await new Promise(resolve => setTimeout(resolve, 100));
+			attempts++;
 		}
 		
 		isCheckingAuth = false;
 		
 		// Redirect to sign-in if not authenticated
-		if (!isAuthenticated) {
+		if (!authState.isAuthenticated) {
 			goto('/auth/sign-in');
 			return;
 		}
-		
 		// Connect to WebSocket for real-time updates
 		await websocketService.connect();
 	});
@@ -75,9 +77,13 @@
 		websocketService.disconnect();
 	});
 
-	function handleSignOut() {
+	async function handleSignOut() {
 		websocketService.disconnect();
-		authStore.clearAuth();
+		
+		// Call the AuthAPI signOut method to clear cookies and state
+		const { authAPI } = await import('$lib/api/auth');
+		await authAPI.signOut();
+		
 		goto('/auth/sign-in');
 	}
 

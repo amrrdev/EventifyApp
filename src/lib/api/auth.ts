@@ -51,10 +51,19 @@ class AuthAPI {
     [];
   private isInitializing = false;
   private initializePromise: Promise<boolean> | null = null;
+  private tokenRefreshTimer: NodeJS.Timeout | null = null;
+  private hasManuallyLoggedOut = false; // Flag to prevent auto re-login
 
   // Set the in-memory access token
   setAccessToken(token: string | null): void {
     this.accessToken = token;
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
+    }
+    if (token) {
+      this.scheduleProactiveRefresh(token);
+    }
   }
 
   // Get the current access token
@@ -145,7 +154,7 @@ class AuthAPI {
     return data;
   }
 
-  private async handleTokenRefresh(): Promise<string> {
+  async handleTokenRefresh(): Promise<string> {
     // If already refreshing, queue this request
     if (this.isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -157,11 +166,7 @@ class AuthAPI {
 
     try {
       const response = await this.refreshTokenFromCookie();
-      this.accessToken = response.accessToken;
-
-      // Refresh token rotation is handled automatically by HTTP-only cookies
-      if (response.refreshToken) {
-      }
+      this.setAccessToken(response.accessToken);
 
       // Update the auth store
       const { authStore } = await import("$lib/stores/auth");
@@ -170,13 +175,20 @@ class AuthAPI {
       // Process queued requests
       this.refreshQueue.forEach(({ resolve }) => resolve(response.accessToken));
       this.refreshQueue = [];
-
+      
       return response.accessToken;
-    } catch (error) {
+    } catch (error: any) {
       // Process queued requests with error
       this.refreshQueue.forEach(({ reject }) => reject(error));
       this.refreshQueue = [];
 
+      // If refresh fails, it might be due to:
+      // 1. Refresh token expired
+      // 2. Refresh token already used (rotation security)
+      // 3. Invalid refresh token
+      // In all cases, user should re-authenticate
+      this.clearAuthAndRedirect();
+      
       throw error;
     } finally {
       this.isRefreshing = false;
@@ -211,9 +223,14 @@ class AuthAPI {
       body: JSON.stringify(credentials),
     });
 
-    // Store both tokens in memory
-    this.accessToken = response.accessToken;
-    this.refreshToken = response.refreshToken;
+    // Store access token in memory (refresh token is handled by httpOnly cookie)
+    this.setAccessToken(response.accessToken);
+    
+    // Clear the manual logout flag since user is logging in again
+    this.hasManuallyLoggedOut = false;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('hasManuallyLoggedOut');
+    }
 
     return response;
   }
@@ -241,20 +258,25 @@ class AuthAPI {
   }
 
   async signOut(): Promise<void> {
-    try {
-      // Call backend to clear the refresh token cookie
-      await this.request("/auth/sign-out", {
-        method: "POST",
-      });
-    } catch (error) {
-      // Even if backend call fails, we should clear local state
-      console.error("Sign out error:", error);
-    } finally {
-      // Clear in-memory tokens and auth state
-      this.accessToken = null;
-      this.refreshToken = null;
-      const { authStore } = await import("$lib/stores/auth");
-      authStore.clearAuth();
+    // Set the logout flag to prevent automatic re-login
+    this.hasManuallyLoggedOut = true;
+    
+    // Clear in-memory tokens and auth state
+    this.setAccessToken(null);
+    
+    // Clear any scheduled refresh timers
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
+    }
+    
+    // Clear auth store
+    const { authStore } = await import("$lib/stores/auth");
+    authStore.clearAuth();
+    
+    // Store logout flag in localStorage to persist across page refreshes
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('hasManuallyLoggedOut', 'true');
     }
   }
 
@@ -304,19 +326,63 @@ class AuthAPI {
   }
 
   private async _performInitialization(): Promise<boolean> {
+    // Check if user has manually logged out
+    if (typeof localStorage !== 'undefined') {
+      const hasLoggedOut = localStorage.getItem('hasManuallyLoggedOut');
+      if (hasLoggedOut === 'true') {
+        this.hasManuallyLoggedOut = true;
+        // Clear any leftover state
+        this.setAccessToken(null);
+        const { authStore } = await import("$lib/stores/auth");
+        authStore.clearAuth();
+        return false;
+      }
+    }
+    
     try {
       const response = await this.refreshTokenFromCookie();
-      this.accessToken = response.accessToken;
+      this.setAccessToken(response.accessToken);
+      
+      // Update the auth store on successful initialization
+      const { authStore } = await import("$lib/stores/auth");
+      authStore.updateAccessToken(response.accessToken);
+      
       return true;
     } catch (error: any) {
+      // Clear any leftover state when initialization fails
+      this.setAccessToken(null);
+      const { authStore } = await import("$lib/stores/auth");
+      authStore.clearAuth();
+      
       // Silently handle expected cases where no refresh token exists
       if (error?.statusCode === 400 || error?.statusCode === 401) {
-        // No valid refresh token available - this is expected for new/unauthenticated users
         return false;
       }
 
-      // Log unexpected errors
+      console.error('AuthAPI initialization unexpected error:', error);
       return false;
+    }
+  }
+
+  private scheduleProactiveRefresh(token: string): void {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expires = payload.exp * 1000; // Convert to milliseconds
+      const now = Date.now();
+      const threeMinutes = 3 * 60 * 1000;
+
+      let refreshTime = expires - now - threeMinutes;
+      if (refreshTime < 0) {
+        refreshTime = 5000; // If already within 3 minutes, refresh soon
+      }
+
+      this.tokenRefreshTimer = setTimeout(() => {
+        this.handleTokenRefresh().catch(error => {
+          console.error('Proactive token refresh failed:', error);
+        });
+      }, refreshTime);
+    } catch (error) {
+      console.error('Failed to decode token for proactive refresh:', error);
     }
   }
 }

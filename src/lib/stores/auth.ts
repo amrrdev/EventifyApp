@@ -79,30 +79,22 @@ function createAuthStore() {
     // Only call this when you actually need to check if user has valid session
     initAuth: async () => {
       if (!browser) {
-        console.log('🔴 authStore.initAuth: Not in browser, returning false');
         return false;
       }
 
-      console.log('🔵 authStore.initAuth: Starting...');
       update((state) => ({ ...state, isLoading: true }));
 
       try {
         // Import authAPI and try to initialize
         const { authAPI } = await import("$lib/api/auth");
-        console.log('🔵 authStore.initAuth: Calling authAPI.initialize()...');
         const success = await authAPI.initialize();
-        console.log('🔵 authStore.initAuth: authAPI.initialize() result:', success);
 
         if (success) {
           // Get user profile to set user data
-          console.log('🔵 authStore.initAuth: Getting user profile...');
           const user = await authAPI.getUserProfile();
           const accessToken = authAPI.getAccessToken();
-          console.log('🔵 authStore.initAuth: User:', user);
-          console.log('🔵 authStore.initAuth: Access token exists:', !!accessToken);
 
           if (accessToken) {
-            console.log('🟢 authStore.initAuth: Setting authenticated state');
             set({
               user,
               accessToken,
@@ -114,11 +106,10 @@ function createAuthStore() {
         }
 
         // Failed to initialize
-        console.log('🔴 authStore.initAuth: Failed, clearing state');
         set(initialState);
         return false;
       } catch (error) {
-        console.error("🔴 authStore.initAuth: Error during initialization:", error);
+        console.error("Auth initialization error:", error);
         set(initialState);
         return false;
       }
