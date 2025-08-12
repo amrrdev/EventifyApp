@@ -62,12 +62,23 @@ class WebSocketService {
 
     try {
       // Create WebSocket connection with token authentication
-      // Use dedicated WebSocket URL from config
       const wsUrl = config.WS_BASE_URL;
+      
+      // In production on Vercel, WebSocket proxying doesn't work well
+      // Fall back to polling transport which works through HTTP proxy
+      const transports = import.meta.env.PROD 
+        ? ["polling"] // Use polling in production (works with HTTP proxy)
+        : ["websocket", "polling"]; // Prefer WebSocket in development
 
+      console.log(`🔌 Connecting to Socket.IO:`, {
+        url: wsUrl,
+        transports,
+        isProduction: import.meta.env.PROD
+      });
+      
       this.socket = io(wsUrl, {
         query: { token: accessToken },
-        transports: ["websocket"],
+        transports,
         timeout: 10000,
         forceNew: true,
         reconnection: true,
