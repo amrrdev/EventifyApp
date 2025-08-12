@@ -48,6 +48,20 @@ export default defineConfig({
           });
         },
       },
+      '/socket.io': {
+        target: 'http://api.evntfy.tech',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // Enable WebSocket proxying
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('WebSocket Proxy error:', err);
+          });
+          proxy.on('proxyReqWs', (proxyReq, req, socket) => {
+            console.log('Sending WebSocket Request to the Target:', req.url);
+          });
+        },
+      },
     },
   },
 

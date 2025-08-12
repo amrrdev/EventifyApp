@@ -8,9 +8,10 @@ export const config = {
   // The proxy is configured in vite.config.ts (dev) and vercel.json (production)
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "/api",
   
-  // WebSocket Configuration
-  // WebSocket connections need to go directly to the backend (can't be proxied easily)
-  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || "ws://api.evntfy.tech",
+  // WebSocket Configuration  
+  // Use the same approach as API - proxy through the frontend domain
+  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || 
+    (typeof window !== 'undefined' ? window.location.origin : ''),
 
   // App Configuration
   APP_VERSION: "1.0.0",
