@@ -16,7 +16,7 @@ import type {
 } from "$lib/types/apiKey";
 
 // const API_BASE = "http://localhost:3000/api/v1";
-const API_BASE = "http://api.evntfy.tech/api/v1";
+const API_BASE = "https://api.evntfy.tech/api/v1";
 
 class ApiKeyService {
   private getAuthHeaders() {

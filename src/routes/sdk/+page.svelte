@@ -205,7 +205,7 @@
 						<span class="text-2xl mr-2">📥</span> Installation
 					</h2>
 					<div class="relative">
-						<pre class="bg-[#0b111b] text-[#68d391] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+						<pre class="bg-[#0b111b] text-[#68d391] rounded-lg p-4 font-mono text-sm overflow-x-auto">npm install @eventify/sdk</pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode('npm install @eventify/sdk', 'install')}
@@ -221,7 +221,7 @@
 						<span class="text-2xl mr-2">⚡</span> Quick Start
 					</h2>
 					<div class="relative">
-						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+						<pre class="bg-[#0b111b] rounded-lg p-4 font-mono text-sm overflow-x-auto"><code>{@html codeSnippets.quickstart}</code></pre>
 						<button 
 							class="absolute top-2 right-2 p-2 text-[#a0aec0] hover:text-[#68d391] transition-colors"
 							onclick={() => copyCode(`const eventify = require('@eventify/sdk');\n\n// Initialize\nawait eventify.init('your-api-key');\n\n// Send events\neventify.event({\n  eventName: 'user_signup',\n  payload: { userId: '123' }\n});`, 'quickstart')}
